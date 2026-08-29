@@ -1,0 +1,1016 @@
+Yes. Based on what we've established, I would reposition V1 around one core question:
+
+“The repair shop just called. Do I spend the money fixing this vehicle, or put that money toward replacing it?”
+
+The app should compare the real cost of keeping the existing vehicle against the real cost of acquiring a replacement vehicle.
+
+Fix or Replace Auto — V1
+Core V1 experience
+
+Garage → Select Vehicle → Enter Repair → Enter Replacement Option → Compare → Recommendation → What-If → Save
+
+Target: under 3 minutes once the vehicle is already in the garage.
+
+SCREEN 1 — Welcome
+FIX OR REPLACE AUTO
+
+Know before you spend.
+
+Your repair shop just called.
+
+Should you:
+
+FIX IT
+GET ANOTHER QUOTE
+REPLACE IT
+
+We'll compare the cost of repairing your current vehicle with the real cost of replacing it.
+
+[ GET STARTED ]
+
+SCREEN 2 — Account
+Create Your Account
+
+Continue with Apple
+
+Continue with Google
+
+or
+
+Email
+Password
+
+[ CREATE ACCOUNT ]
+
+Small text:
+
+Your vehicles and repair decisions will be saved securely to your account.
+
+SCREEN 3 — Build Your Garage
+LET'S BUILD YOUR GARAGE
+
+Add the vehicles your household currently owns.
+
+[ + ADD VEHICLE ]
+
+[ SKIP FOR NOW ]
+
+SCREEN 4 — Add Vehicle
+ADD A VEHICLE
+
+Recommended:
+
+[ SCAN VIN ]
+
+or
+
+Enter VIN
+
+_________________
+
+or
+
+Enter Vehicle Manually
+
+Year
+Make
+Model
+Trim
+
+Data
+
+Use NHTSA vPIC for VIN decoding.
+
+SCREEN 5 — Confirm Vehicle
+We found:
+2013 Ford Escape Titanium
+
+2.0L EcoBoost
+4-Door SUV
+FWD
+
+Is this your vehicle?
+
+[ YES ]
+
+[ EDIT ]
+
+SCREEN 6 — Vehicle Profile
+2013 Ford Escape Titanium
+
+Current Mileage
+
+155,000
+
+Vehicle Nickname
+
+Daughter's Escape
+
+Optional.
+
+Who primarily drives it?
+
+Me
+Spouse/Partner
+Child
+Other
+
+ZIP Code
+
+48073
+
+Used for vehicle valuation and taxes/fees where possible.
+
+[ SAVE VEHICLE ]
+
+Do not ask about loans, purchase price, condition, etc. during onboarding.
+
+SCREEN 7 — My Garage
+
+This becomes the normal home screen.
+
+MY GARAGE
+Daughter's Escape
+
+2013 Ford Escape Titanium
+
+155,000 miles
+
+[ FIX OR REPLACE? ]
+
+My Explorer
+
+2019 Ford Explorer XLT
+
+82,400 miles
+
+[ FIX OR REPLACE? ]
+
+Wife's Edge
+
+2021 Ford Edge SEL
+
+61,200 miles
+
+[ FIX OR REPLACE? ]
+
++ ADD VEHICLE
+
+Bottom navigation:
+
+Garage | Decisions | Settings
+
+SCREEN 8 — Vehicle
+
+User taps Daughter's Escape.
+
+Daughter's Escape
+2013 Ford Escape Titanium
+
+155,000 miles
+
+[ I HAVE A REPAIR ESTIMATE ]
+
+Below:
+
+Previous Decisions
+
+None yet.
+
+Later this becomes:
+
+Suspension — $4,000 — FIX
+AC Compressor — $1,250 — FIX
+Brakes — $850 — FIX
+
+That history eventually improves recommendations.
+
+SCREEN 9 — Update Mileage
+
+Before every analysis:
+
+CURRENT MILEAGE
+
+Last reported:
+
+155,000
+
+Is this still approximately correct?
+
+[ YES ]
+
+[ UPDATE ]
+
+If update:
+
+[ 158,425 ]
+
+SCREEN 10 — What Did the Shop Say?
+
+This needs to reflect the real-world phone call.
+
+WHAT DID THE SHOP TELL YOU?
+Total Repair Estimate
+$ 4,000
+What's being repaired?
+
+🎙 Tell Us
+
+or
+
+⌨ Type It
+
+Example:
+
+“They said it needs about $4,000 worth of suspension work.”
+
+Optional:
+
+Have a written estimate?
+
+Take Photo
+
+Upload Estimate
+
+But this is secondary.
+
+SCREEN 11 — Confirm Repair
+
+AI structures what the user said.
+
+HERE'S WHAT WE HEARD
+Suspension Repair
+
+Estimated Cost
+
+$4,000
+
+Did the shop say the vehicle is unsafe to drive?
+
+Yes / No / Not Sure
+
+[ EDIT ]
+
+[ CORRECT — CONTINUE ]
+
+SCREEN 12 — Vehicle History
+HOW HAS THIS VEHICLE BEEN?
+
+Other than this repair:
+
+🟢 RELIABLE
+
+Mostly routine maintenance and normal repairs.
+
+🟡 SOME PROBLEMS
+
+Several repairs or problems recently.
+
+🔴 PROBLEM VEHICLE
+
+Frequent repairs, breakdowns or recurring problems.
+
+Then:
+
+Major repairs in the last 12 months
+
+$ ______
+
+None
+
+Not Sure
+
+If the app already has recorded repair decisions:
+
+We have $1,850 in repairs recorded during the past 12 months.
+
+Is that approximately correct?
+
+YES / ADD ANOTHER REPAIR
+
+SCREEN 13 — Current Vehicle Financials
+ABOUT YOUR CURRENT VEHICLE
+Do you owe money on it?
+
+No
+
+Yes
+
+Not Sure
+
+If Yes:
+
+Approximate Loan Payoff
+
+$ ______
+
+Not monthly payment. We need the payoff balance.
+
+Overall condition before this problem
+
+Excellent
+Good
+Fair
+Poor
+
+[ CONTINUE ]
+
+SCREEN 14 — Current Vehicle Value
+
+Backend valuation.
+
+YOUR VEHICLE TODAY
+2013 Ford Escape Titanium
+
+155,000 miles
+
+Estimated current value:
+
+$4,000–$5,500
+
+Working estimate:
+
+$4,750
+
+If loan:
+
+Loan payoff: $6,000
+
+Estimated equity:
+
+−$1,250
+
+or if paid off:
+
+Estimated equity:
+
++$4,750
+
+[ CONTINUE ]
+
+This screen is informational.
+
+We do not say:
+
+$4,000 repair / $4,750 value = replace.
+
+That's exactly the simplistic calculation we're trying to avoid.
+
+SCREEN 15 — Replacement Question
+
+Now the other half.
+
+IF YOU DON'T FIX IT...
+What would you realistically replace it with?
+
+Two choices:
+
+USED VEHICLE
+
+[ USED ]
+
+NEW VEHICLE
+
+[ NEW ]
+
+SCREEN 16 — Replacement Price
+
+For V1, keep this straightforward.
+
+REPLACEMENT VEHICLE
+Expected Purchase Price
+
+$ 22,000
+
+Eventually we can let users select actual replacement vehicles, but that's V2.
+
+Trade or sell current vehicle?
+
+Trade It
+
+Sell It
+
+Keep It
+
+Not Sure
+
+If trade/sell:
+
+Estimated current as-is value:
+
+$ 2,500
+
+Allow user to change it.
+
+SCREEN 17 — Replacement Costs
+
+This is a critical screen.
+
+REAL COST TO REPLACE
+
+Purchase price:
+
+$22,000
+
+Now calculate/add:
+
+Sales Tax
+
+$1,320
+
+Allow Edit.
+
+Title / Registration
+
+$XXX
+
+Dealer Documentation Fee
+
+$ XXX
+
+Delivery / Transportation
+
+$ 0
+
+Other Dealer Fees
+
+$ XXX
+
+Then:
+
+Purchase Price
+$22,000
+
+Taxes
++$1,320
+
+Title/Registration
++$XXX
+
+Dealer Fees
++$XXX
+
+Delivery
++$0
+
+OUT-THE-DOOR PRICE
+$23,XXX
+
+This is the number we compare—not $22,000.
+
+SCREEN 18 — Trade/Current Vehicle
+
+Now account for the current car.
+
+Current Vehicle
+
+Estimated as-is value:
+
+$2,500
+
+Loan payoff:
+
+$0
+
+Net value available:
+
+$2,500
+
+Replacement out-the-door:
+
+$23,XXX
+
+Less current vehicle:
+
+−$2,500
+
+NET REPLACEMENT COST
+$20,XXX
+
+That's the economically relevant number.
+
+SCREEN 19 — Financing
+HOW WOULD YOU PAY?
+Cash
+
+or
+
+Finance
+
+If Finance:
+
+Down Payment
+
+$3,000
+
+Interest Rate
+
+7.25%
+
+Loan Term
+
+60 months
+
+System calculates:
+
+Amount financed:
+
+$17,XXX
+
+Estimated payment:
+
+$XXX/month
+
+Total interest:
+
+$X,XXX
+
+Total acquisition cost including financing:
+
+$XX,XXX
+
+Don't make the user calculate monthly payments.
+
+SCREEN 20 — Analysis
+
+Very brief transition.
+
+RUNNING THE NUMBERS...
+
+Comparing:
+
+✓ Current vehicle value
+
+✓ Current repair
+
+✓ Recent repair history
+
+✓ Mileage and age
+
+✓ Vehicle reliability input
+
+✓ Remaining loan
+
+✓ Replacement cost
+
+✓ Taxes
+
+✓ Title/registration
+
+✓ Dealer fees
+
+✓ Trade/sale value
+
+✓ Financing cost
+
+SCREEN 21 — THE RESULT
+
+This is the money screen.
+
+Using your daughter's scenario as an example:
+
+FIX OR REPLACE?
+2013 Ford Escape Titanium
+
+155,000 miles
+
+🟢 FIX IT
+Current Repair
+$4,000
+
+versus
+
+Net Cost to Replace
+$20,XXX
+
+Then:
+
+Although the $4,000 repair is significant relative to the Escape's current market value, replacing the vehicle with the option you entered requires substantially more money.
+
+SCREEN 22 — Side-by-Side
+
+Directly underneath or swipe down:
+
+YOUR TWO OPTIONS
+	FIX IT	REPLACE IT
+Repair	$4,000	—
+Replacement vehicle	—	$22,000
+Taxes	—	$1,XXX
+Title/registration	—	$XXX
+Dealer/delivery fees	—	$XXX
+Current vehicle credit	—	−$2,500
+Financing interest	—	$X,XXX
+Estimated cost	$4,000	$XX,XXX
+
+Then:
+
+DIFFERENCE
+Fixing preserves approximately $XX,XXX
+
+But add:
+
+Repairing also carries greater future repair risk because of the vehicle's age and mileage.
+
+We shouldn't pretend the $4,000 option makes the old vehicle new.
+
+SCREEN 23 — 24-Month Outlook
+
+This is where the recommendation becomes better than simple math.
+
+NEXT 24 MONTHS
+FIX CURRENT VEHICLE
+
+Repair now:
+
+$4,000
+
+Recent repair history:
+
+$X
+
+Vehicle:
+
+12 years / 155,000 miles
+
+Reliability:
+
+Good
+
+Additional repair risk:
+
+Elevated
+
+REPLACE VEHICLE
+
+Initial net acquisition:
+
+$XX,XXX
+
+Monthly payment:
+
+$XXX
+
+Payments over 24 months:
+
+$X,XXX
+
+Potential insurance increase:
+
+Not included
+
+Maintenance:
+
+Not included unless reliable data available
+
+We should be transparent about what isn't included.
+
+SCREEN 24 — Maximum Sensible Repair
+
+I would retain this feature but change its meaning.
+
+YOUR REPAIR THRESHOLD
+$X,XXX
+
+Based on the replacement option you entered, your vehicle's condition, mileage, recent repair history and current value, repairing remains financially competitive up to approximately this amount.
+
+Then:
+
+Your estimate: $4,000
+
+$X,XXX BELOW THRESHOLD
+
+🟢 FIX
+
+This is much better than saying:
+
+Don't repair a car for more than 50% of its value.
+
+SCREEN 25 — What-If
+CHANGE THE NUMBERS
+
+This is essential.
+
+Repair Cost
+
+$4,000
+
+slider/input
+
+Replacement Vehicle
+
+$22,000
+
+Trade Value
+
+$2,500
+
+Down Payment
+
+$3,000
+
+Interest Rate
+
+7.25%
+
+Change anything and recalculate instantly.
+
+For example:
+
+Repair becomes:
+
+$7,500
+
+Recommendation might become:
+
+🟡 GET ANOTHER QUOTE
+
+Then $10,000:
+
+🔴 REPLACE
+
+This lets users find their own tipping point.
+
+SCREEN 26 — Why?
+WHY FIX?
+
+AI receives the calculated results, not just the raw question.
+
+It might explain:
+
+Your $4,000 repair is expensive for a 2013 vehicle with 155,000 miles. However, your realistic replacement is approximately $22,000 before taxes and other acquisition costs.
+
+Because your Escape has otherwise been reliable and you have little recent repair spending, repairing it currently requires substantially less cash than replacing it.
+
+The decision becomes less favorable if additional major repairs are expected soon.
+
+AI explains.
+
+Your algorithm decides.
+
+SCREEN 27 — Questions for the Shop
+BEFORE YOU SAY YES
+
+Based upon the repair:
+
+Questions to Ask Your Mechanic
+
+Is $4,000 the complete out-the-door repair price?
+Which suspension components are being replaced?
+Which repairs are necessary now?
+Are any items recommendations rather than required repairs?
+What parts and labor warranty is included?
+Do you see any other major repairs likely soon?
+
+[ COPY QUESTIONS ]
+
+SCREEN 28 — Save Decision
+SAVE THIS DECISION?
+Daughter's Escape
+
+Suspension Repair
+
+$4,000
+
+🟢 FIX
+
+[ SAVE ]
+
+SCREEN 29 — Vehicle History
+
+Now Daughter's Escape shows:
+
+DAUGHTER'S ESCAPE
+
+2013 Ford Escape Titanium
+
+Current Mileage:
+
+155,000
+
+DECISION HISTORY
+
+Aug 29, 2026
+
+Suspension
+
+$4,000
+
+🟢 FIX
+
+Future repair:
+
+Jan 2027
+
+Cooling System
+
+$1,600
+
+Now the app knows:
+
+Recent major repairs:
+
+$5,600
+
+That information feeds the next decision.
+
+This is where the product becomes smarter over time.
+
+V1 Recommendation States
+
+I'd use four rather than three:
+
+🟢 FIX IT
+
+Economics favor repairing.
+
+🟡 GET ANOTHER QUOTE
+
+Keeping the vehicle may make sense, but the repair price is too close to the threshold.
+
+🔴 REPLACE IT
+
+Replacement economics now look stronger.
+
+⚪ TOO CLOSE TO CALL
+
+Neither option has a meaningful financial advantage.
+
+That last state builds credibility. The app shouldn't pretend every decision has an obvious answer.
+
+V1 Calculation Structure
+
+Don't make this:
+
+Repair Cost ÷ Vehicle Value = Decision
+
+Instead:
+
+KEEP SCORE
+
+Consider:
+
+CurrentRepair
+
+RecentRepairs
+
+Age
+
+Mileage
+
+Condition
+
+ReliabilityHistory
+
+CurrentVehicleValue
+
+CurrentLoan
+
+REPLACE SCORE
+
+Consider:
+
+ReplacementPrice
+
+SalesTax
+
+Title
+
+Registration
+
+DocFee
+
+Delivery
+
+OtherFees
+
+CurrentVehicleTradeValue
+
+CurrentLoanPayoff
+
+DownPayment
+
+InterestRate
+
+LoanTerm
+
+TotalInterest
+
+Then calculate:
+
+Net Replacement Acquisition Cost
+
+roughly:
+
+Replacement Price
++ Sales Tax
++ Title
++ Registration
++ Documentation Fee
++ Delivery
++ Other Required Fees
+- Net Current Vehicle Value
++ Financing Cost
+
+Compare that with repairing/keeping the existing vehicle while applying an appropriate future-repair-risk adjustment.
+
+What V1 Does NOT Need
+
+Keep these out:
+
+OBD-II diagnostics
+Mechanic marketplace
+Repair-shop scheduling
+Parts shopping
+Used-car listings
+New-car listings
+Insurance quotes
+CarFax-style history
+Predictive maintenance
+Recall management
+Gas-cost comparisons
+EV comparisons
+Exact repair labor pricing
+Mechanic quote fairness
+Separate family accounts
+Shared garages
+
+All can come later.
+
+V1 Data Sources
+
+Very little external data is actually required:
+
+Data	Source
+VIN	NHTSA
+Year/Make/Model/Engine	NHTSA
+Mileage	User
+Repair amount	User/shop estimate
+Repair description	User/AI extraction
+Vehicle market value	Licensed vehicle valuation provider
+Replacement price	User
+Trade/as-is value	Valuation provider + user override
+Sales tax	Tax calculation/data source or state rules
+Title/registration	State fee data
+Dealer/doc fees	User input/default where supportable
+Delivery	User
+Interest rate	User
+Loan term	User
+Existing payoff	User
+Previous repairs	Stored history + user
+Recommendation	Your engine
+Explanation	AI
+
+For V1, I would not let uncertain tax/title data hold up the analysis. Prepopulate what we can reliably determine from ZIP/state and make every number editable.
+
+The complete V1 journey
+DOWNLOAD
+   ↓
+CREATE ACCOUNT
+   ↓
+BUILD MY GARAGE
+   ↓
+SCAN VIN
+   ↓
+ADD MOM / DAD / KIDS' VEHICLES
+   ↓
+MY GARAGE
+   ↓
+SELECT VEHICLE
+   ↓
+SHOP CALLS
+   ↓
+ENTER/SPEAK REPAIR + PRICE
+   ↓
+CONFIRM
+   ↓
+VEHICLE HISTORY / CONDITION
+   ↓
+CURRENT VALUE
+   ↓
+WHAT WOULD YOU REPLACE IT WITH?
+   ↓
+USED / NEW
+   ↓
+REPLACEMENT PRICE
+   ↓
+TAX + TITLE + FEES + DELIVERY
+   ↓
+TRADE / SELL CURRENT CAR
+   ↓
+CASH OR FINANCE
+   ↓
+COMPARE
+   ↓
+FIX / ANOTHER QUOTE / REPLACE / TOO CLOSE
+   ↓
+24-MONTH VIEW
+   ↓
+REPAIR THRESHOLD
+   ↓
+WHAT-IF
+   ↓
+QUESTIONS FOR MECHANIC
+   ↓
+SAVE TO VEHICLE HISTORY
+
+That is the V1 I would build. Your daughter's $4,000 Escape decision should actually be one of the test cases used while developing the decision engine: if the app blindly says “replace” simply because a $4,000 repair approaches the market value of a 155,000-mile Escape, we've designed the algorithm incorrectly.

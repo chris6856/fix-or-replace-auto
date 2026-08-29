@@ -1,0 +1,137 @@
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { useAuth } from './AuthContext';
+import { isAppleSignInAvailable, isGoogleSignInConfigured, signInWithApple, signInWithGoogle } from './socialSignIn';
+
+type Mode = 'signIn' | 'signUp';
+
+export default function SignInScreen() {
+  const { signInWithEmail, signUpWithEmail } = useAuth();
+  const [mode, setMode] = useState<Mode>('signUp');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [appleAvailable, setAppleAvailable] = useState(false);
+
+  useEffect(() => {
+    isAppleSignInAvailable().then(setAppleAvailable);
+  }, []);
+
+  async function handleEmailSubmit() {
+    setError(null);
+    setIsSubmitting(true);
+    const result = mode === 'signUp' ? await signUpWithEmail(email, password) : await signInWithEmail(email, password);
+    setIsSubmitting(false);
+    if (result.error) setError(result.error);
+  }
+
+  async function handleApple() {
+    setError(null);
+    const result = await signInWithApple();
+    if (result.error) setError(result.error);
+  }
+
+  async function handleGoogle() {
+    setError(null);
+    const result = await signInWithGoogle();
+    if (result.error) setError(result.error);
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{mode === 'signUp' ? 'Create Your Account' : 'Welcome Back'}</Text>
+
+      {appleAvailable && (
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+          cornerRadius={8}
+          style={styles.appleButton}
+          onPress={handleApple}
+        />
+      )}
+
+      {isGoogleSignInConfigured && (
+        <Pressable style={styles.socialButton} onPress={handleGoogle}>
+          <Text style={styles.socialButtonText}>Continue with Google</Text>
+        </Pressable>
+      )}
+
+      {(appleAvailable || isGoogleSignInConfigured) && <Text style={styles.orText}>or</Text>}
+
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        autoCapitalize="none"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+
+      {error && <Text style={styles.error}>{error}</Text>}
+
+      <Pressable style={styles.primaryButton} onPress={handleEmailSubmit} disabled={isSubmitting}>
+        {isSubmitting ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.primaryButtonText}>{mode === 'signUp' ? 'CREATE ACCOUNT' : 'SIGN IN'}</Text>
+        )}
+      </Pressable>
+
+      <Pressable onPress={() => setMode(mode === 'signUp' ? 'signIn' : 'signUp')}>
+        <Text style={styles.switchModeText}>
+          {mode === 'signUp' ? 'Already have an account? Sign in' : "Don't have an account? Create one"}
+        </Text>
+      </Pressable>
+
+      <Text style={styles.disclaimer}>Your vehicles and repair decisions will be saved securely to your account.</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#fff' },
+  title: { fontSize: 24, fontWeight: '700', marginBottom: 24, textAlign: 'center' },
+  appleButton: { width: '100%', height: 48, marginBottom: 12 },
+  socialButton: {
+    width: '100%',
+    height: 48,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  socialButtonText: { fontSize: 16, fontWeight: '600' },
+  orText: { textAlign: 'center', color: '#888', marginVertical: 8 },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    fontSize: 16,
+  },
+  primaryButton: {
+    backgroundColor: '#111',
+    borderRadius: 8,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  primaryButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  switchModeText: { textAlign: 'center', color: '#666', marginTop: 16 },
+  error: { color: '#c62828', marginBottom: 8, textAlign: 'center' },
+  disclaimer: { textAlign: 'center', color: '#888', fontSize: 12, marginTop: 24 },
+});
