@@ -30,6 +30,12 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.REPLACE_WITH_YOUR_IOS_CLIENT_ID"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Fix or Replace Auto uses your camera to scan a vehicle's VIN barcode."
+        }
       ]
     ]
   }

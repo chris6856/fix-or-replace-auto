@@ -6,8 +6,11 @@ import SignInScreen from '../auth/SignInScreen';
 import WelcomeScreen from '../onboarding/WelcomeScreen';
 import GarageScreen from '../garage/GarageScreen';
 import AddVehicleScreen from '../garage/AddVehicleScreen';
+import ScanVinScreen from '../garage/ScanVinScreen';
+import ConfirmVehicleScreen from '../garage/ConfirmVehicleScreen';
 import VehicleProfileScreen from '../garage/VehicleProfileScreen';
 import VehicleDetailScreen from '../garage/VehicleDetailScreen';
+import type { DecodedVehicle } from '../garage/vinDecode';
 
 export type AuthStackParamList = {
   Welcome: undefined;
@@ -24,7 +27,9 @@ export type VehicleDraft = {
 
 export type AppStackParamList = {
   Garage: undefined;
-  AddVehicle: undefined;
+  AddVehicle: { prefill?: VehicleDraft } | undefined;
+  ScanVin: undefined;
+  ConfirmVehicle: { decoded: DecodedVehicle };
   VehicleProfile: { draft: VehicleDraft };
   VehicleDetail: { vehicleId: string };
 };
@@ -49,6 +54,12 @@ export default function RootNavigator() {
         <AppStack.Navigator>
           <AppStack.Screen name="Garage" component={GarageScreen} options={{ title: 'My Garage' }} />
           <AppStack.Screen name="AddVehicle" component={AddVehicleScreen} options={{ title: 'Add a Vehicle' }} />
+          <AppStack.Screen name="ScanVin" component={ScanVinScreen} options={{ title: 'Scan VIN' }} />
+          <AppStack.Screen
+            name="ConfirmVehicle"
+            component={ConfirmVehicleScreen}
+            options={{ title: 'Confirm Vehicle' }}
+          />
           <AppStack.Screen
             name="VehicleProfile"
             component={VehicleProfileScreen}
