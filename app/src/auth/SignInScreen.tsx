@@ -14,6 +14,7 @@ export default function SignInScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [appleAvailable, setAppleAvailable] = useState(false);
+  const [confirmationSentTo, setConfirmationSentTo] = useState<string | null>(null);
 
   useEffect(() => {
     isAppleSignInAvailable().then(setAppleAvailable);
@@ -22,9 +23,16 @@ export default function SignInScreen() {
   async function handleEmailSubmit() {
     setError(null);
     setIsSubmitting(true);
-    const result = mode === 'signUp' ? await signUpWithEmail(email, password) : await signInWithEmail(email, password);
-    setIsSubmitting(false);
-    if (result.error) setError(result.error);
+    if (mode === 'signUp') {
+      const result = await signUpWithEmail(email, password);
+      setIsSubmitting(false);
+      if (result.error) setError(result.error);
+      else if (result.needsEmailConfirmation) setConfirmationSentTo(email);
+    } else {
+      const result = await signInWithEmail(email, password);
+      setIsSubmitting(false);
+      if (result.error) setError(result.error);
+    }
   }
 
   async function handleApple() {
@@ -37,6 +45,26 @@ export default function SignInScreen() {
     setError(null);
     const result = await signInWithGoogle();
     if (result.error) setError(result.error);
+  }
+
+  if (confirmationSentTo) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Check Your Email</Text>
+        <Text style={styles.confirmationText}>
+          We sent a confirmation link to {confirmationSentTo}. Tap it, then come back here and sign in.
+        </Text>
+        <Pressable
+          style={styles.primaryButton}
+          onPress={() => {
+            setConfirmationSentTo(null);
+            setMode('signIn');
+          }}
+        >
+          <Text style={styles.primaryButtonText}>BACK TO SIGN IN</Text>
+        </Pressable>
+      </View>
+    );
   }
 
   return (
@@ -101,6 +129,7 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#fff' },
   title: { fontSize: 24, fontWeight: '700', marginBottom: 24, textAlign: 'center' },
+  confirmationText: { fontSize: 15, color: '#444', textAlign: 'center', marginBottom: 32, lineHeight: 22 },
   appleButton: { width: '100%', height: 48, marginBottom: 12 },
   socialButton: {
     width: '100%',

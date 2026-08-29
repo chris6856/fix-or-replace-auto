@@ -6,10 +6,16 @@ interface AuthResult {
   error: string | null;
 }
 
+interface SignUpResult extends AuthResult {
+  /** True when sign-up succeeded but no session was issued -- this project
+   *  requires confirming email before a session is created. */
+  needsEmailConfirmation: boolean;
+}
+
 interface AuthContextValue {
   session: Session | null;
   isLoading: boolean;
-  signUpWithEmail: (email: string, password: string) => Promise<AuthResult>;
+  signUpWithEmail: (email: string, password: string) => Promise<SignUpResult>;
   signInWithEmail: (email: string, password: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
 }
@@ -38,8 +44,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       session,
       isLoading,
       signUpWithEmail: async (email, password) => {
-        const { error } = await supabase.auth.signUp({ email, password });
-        return { error: error?.message ?? null };
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        return { error: error?.message ?? null, needsEmailConfirmation: !error && !data.session };
       },
       signInWithEmail: async (email, password) => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
