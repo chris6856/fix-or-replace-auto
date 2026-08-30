@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../navigation/RootNavigator';
 
@@ -6,7 +6,12 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'Welcome'>;
 
 export default function WelcomeScreen({ navigation }: Props) {
   return (
-    <View style={styles.container}>
+    <ImageBackground
+      source={require('../../assets/welcome-background.jpg')}
+      style={styles.container}
+      imageStyle={styles.backgroundImage}
+      resizeMode="cover"
+    >
       <Text style={styles.title}>FIX OR REPLACE AUTO</Text>
       <Text style={styles.tagline}>Know before you spend.</Text>
 
@@ -25,12 +30,15 @@ export default function WelcomeScreen({ navigation }: Props) {
       <Pressable style={styles.button} onPress={() => navigation.navigate('SignIn')}>
         <Text style={styles.buttonText}>GET STARTED</Text>
       </Pressable>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#fff' },
+  // Faded well below full opacity so the text on top stays the clearly
+  // prominent element -- the photo reads as mood/texture, not content.
+  backgroundImage: { opacity: 0.16 },
   title: { fontSize: 28, fontWeight: '800', textAlign: 'center', marginBottom: 8 },
   tagline: { fontSize: 16, textAlign: 'center', color: '#555', marginBottom: 32 },
   body: { fontSize: 16, textAlign: 'center', marginBottom: 16, color: '#333' },
