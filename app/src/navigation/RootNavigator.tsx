@@ -1,6 +1,6 @@
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createNativeStackNavigator, type NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { useAuth } from '../auth/AuthContext';
 import SignInScreen from '../auth/SignInScreen';
 import WelcomeScreen from '../onboarding/WelcomeScreen';
@@ -31,6 +31,7 @@ import WhatIfScreen from '../decision/WhatIfScreen';
 import WhyScreen from '../decision/WhyScreen';
 import QuestionsScreen from '../decision/QuestionsScreen';
 import SaveDecisionScreen from '../decision/SaveDecisionScreen';
+import { useDecisionDraft } from '../decision/DecisionDraftContext';
 import type { AnalysisResult } from '../decision/buildCalcInput';
 
 export type AuthStackParamList = {
@@ -78,6 +79,46 @@ export type AppStackParamList = {
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
 
+/**
+ * Shown in the header of every screen in the repair-vs-replace decision
+ * flow (Screens 9-28) so the user is never stuck having to tap back
+ * through a dozen-plus screens to get out. Confirms first since it
+ * discards everything typed so far -- nothing is persisted until Save.
+ */
+function CancelDecisionButton() {
+  const { draft, clearDraft } = useDecisionDraft();
+
+  function handlePress() {
+    Alert.alert('Cancel this decision?', 'Your progress on this repair-vs-replace decision will be lost.', [
+      { text: 'Keep Going', style: 'cancel' },
+      {
+        text: 'Cancel Decision',
+        style: 'destructive',
+        onPress: () => {
+          const vehicleId = draft?.vehicleId;
+          clearDraft();
+          rootNavigationRef?.navigate(vehicleId ? 'VehicleDetail' : 'Garage', vehicleId ? { vehicleId } : undefined);
+        },
+      },
+    ]);
+  }
+
+  return (
+    <Pressable onPress={handlePress} hitSlop={12} style={styles.cancelButton}>
+      <Text style={styles.cancelButtonText}>Cancel</Text>
+    </Pressable>
+  );
+}
+
+/** Set once NavigationContainer mounts -- see the ref wiring below. */
+let rootNavigationRef: {
+  navigate: (name: 'VehicleDetail' | 'Garage', params?: { vehicleId: string }) => void;
+} | null = null;
+
+function decisionScreenOptions(title: string): NativeStackNavigationOptions {
+  return { title, headerRight: () => <CancelDecisionButton /> };
+}
+
 export default function RootNavigator() {
   const { session, isLoading } = useAuth();
 
@@ -90,7 +131,11 @@ export default function RootNavigator() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      ref={(instance) => {
+        rootNavigationRef = instance as typeof rootNavigationRef;
+      }}
+    >
       {session ? (
         <AppStack.Navigator>
           <AppStack.Screen name="Garage" component={GarageScreen} options={{ title: 'My Garage' }} />
@@ -107,53 +152,97 @@ export default function RootNavigator() {
             options={{ title: 'Vehicle Profile' }}
           />
           <AppStack.Screen name="VehicleDetail" component={VehicleDetailScreen} options={{ title: 'Vehicle' }} />
-          <AppStack.Screen name="MileageCheck" component={MileageCheckScreen} options={{ title: 'Current Mileage' }} />
+          <AppStack.Screen
+            name="MileageCheck"
+            component={MileageCheckScreen}
+            options={decisionScreenOptions('Current Mileage')}
+          />
           <AppStack.Screen
             name="RepairEstimate"
             component={RepairEstimateScreen}
-            options={{ title: 'What Did the Shop Say?' }}
+            options={decisionScreenOptions('What Did the Shop Say?')}
           />
           <AppStack.Screen
             name="ConfirmRepair"
             component={ConfirmRepairScreen}
-            options={{ title: "Here's What We Heard" }}
+            options={decisionScreenOptions("Here's What We Heard")}
           />
           <AppStack.Screen
             name="VehicleHistory"
             component={VehicleHistoryScreen}
-            options={{ title: 'Vehicle History' }}
+            options={decisionScreenOptions('Vehicle History')}
           />
-          <AppStack.Screen name="Financials" component={FinancialsScreen} options={{ title: 'Financials' }} />
-          <AppStack.Screen name="CurrentValue" component={CurrentValueScreen} options={{ title: 'Vehicle Value' }} />
+          <AppStack.Screen
+            name="Financials"
+            component={FinancialsScreen}
+            options={decisionScreenOptions('Financials')}
+          />
+          <AppStack.Screen
+            name="CurrentValue"
+            component={CurrentValueScreen}
+            options={decisionScreenOptions('Vehicle Value')}
+          />
           <AppStack.Screen
             name="ReplacementQuestion"
             component={ReplacementQuestionScreen}
-            options={{ title: 'If You Replace It' }}
+            options={decisionScreenOptions('If You Replace It')}
           />
           <AppStack.Screen
             name="ReplacementPrice"
             component={ReplacementPriceScreen}
-            options={{ title: 'Replacement Vehicle' }}
+            options={decisionScreenOptions('Replacement Vehicle')}
           />
           <AppStack.Screen
             name="ReplacementCosts"
             component={ReplacementCostsScreen}
-            options={{ title: 'Real Cost to Replace' }}
+            options={decisionScreenOptions('Real Cost to Replace')}
           />
-          <AppStack.Screen name="TradeIn" component={TradeInScreen} options={{ title: 'Your Current Vehicle' }} />
-          <AppStack.Screen name="Financing" component={FinancingScreen} options={{ title: 'Financing' }} />
+          <AppStack.Screen
+            name="TradeIn"
+            component={TradeInScreen}
+            options={decisionScreenOptions('Your Current Vehicle')}
+          />
+          <AppStack.Screen
+            name="Financing"
+            component={FinancingScreen}
+            options={decisionScreenOptions('Financing')}
+          />
           <AppStack.Screen name="Analysis" component={AnalysisScreen} options={{ title: '', headerShown: false }} />
-          <AppStack.Screen name="Result" component={ResultScreen} options={{ title: 'Fix or Replace?' }} />
-          <AppStack.Screen name="SideBySide" component={SideBySideScreen} options={{ title: 'Your Two Options' }} />
-          <AppStack.Screen name="Outlook" component={OutlookScreen} options={{ title: 'Next 24 Months' }} />
-          <AppStack.Screen name="Threshold" component={ThresholdScreen} options={{ title: 'Repair Threshold' }} />
-          <AppStack.Screen name="WhatIf" component={WhatIfScreen} options={{ title: 'Change the Numbers' }} />
-          <AppStack.Screen name="Why" component={WhyScreen} options={{ title: 'Why?' }} />
-          <AppStack.Screen name="Questions" component={QuestionsScreen} options={{ title: 'Before You Say Yes' }} />
+          <AppStack.Screen
+            name="Result"
+            component={ResultScreen}
+            options={decisionScreenOptions('Fix or Replace?')}
+          />
+          <AppStack.Screen
+            name="SideBySide"
+            component={SideBySideScreen}
+            options={decisionScreenOptions('Your Two Options')}
+          />
+          <AppStack.Screen
+            name="Outlook"
+            component={OutlookScreen}
+            options={decisionScreenOptions('Next 24 Months')}
+          />
+          <AppStack.Screen
+            name="Threshold"
+            component={ThresholdScreen}
+            options={decisionScreenOptions('Repair Threshold')}
+          />
+          <AppStack.Screen
+            name="WhatIf"
+            component={WhatIfScreen}
+            options={decisionScreenOptions('Change the Numbers')}
+          />
+          <AppStack.Screen name="Why" component={WhyScreen} options={decisionScreenOptions('Why?')} />
+          <AppStack.Screen
+            name="Questions"
+            component={QuestionsScreen}
+            options={decisionScreenOptions('Before You Say Yes')}
+          />
           <AppStack.Screen
             name="SaveDecision"
             component={SaveDecisionScreen}
-            options={{ title: 'Save This Decision?' }}
+            options={decisionScreenOptions('Save This Decision?')}
           />
         </AppStack.Navigator>
       ) : (
@@ -165,3 +254,8 @@ export default function RootNavigator() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  cancelButton: { paddingHorizontal: 4, paddingVertical: 4 },
+  cancelButtonText: { fontSize: 15, color: '#c62828', fontWeight: '600' },
+});

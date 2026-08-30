@@ -102,7 +102,9 @@ export default function CurrentValueScreen({ navigation }: Props) {
       <Text style={styles.helperText}>
         {fetchState === 'fetched'
           ? 'Estimated from real market data -- you can adjust it.'
-          : "You can adjust this -- we couldn't fetch a market value automatically for this vehicle."}
+          : vehicle?.vin
+            ? "We couldn't get an automatic market value for this specific VIN -- that happens sometimes even for common vehicles. Enter your best estimate below."
+            : 'Add a VIN to this vehicle for an automatic market value next time -- for now, enter your best estimate below.'}
       </Text>
 
       {parsedValue > 0 && (

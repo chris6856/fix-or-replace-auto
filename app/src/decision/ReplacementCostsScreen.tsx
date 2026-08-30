@@ -11,13 +11,25 @@ function toNumber(value: string): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+// Nationwide ballpark defaults, deliberately not state-specific -- just
+// enough to give a realistic starting number instead of $0. Every field
+// stays fully editable; see build plan milestone 6's note that ZIP/state-
+// accurate tax/title data is a later refinement, not required for V1.
+const DEFAULT_SALES_TAX_RATE = 0.065; // ~6.5%, a commonly cited average combined state+local rate
+const DEFAULT_TITLE_REGISTRATION = 100;
+const DEFAULT_DOC_FEE = 400;
+
 export default function ReplacementCostsScreen({ navigation }: Props) {
   const { draft, updateDraft } = useDecisionDraft();
-  const [salesTax, setSalesTax] = useState(draft?.salesTax ? String(draft.salesTax) : '');
-  const [titleRegistration, setTitleRegistration] = useState(
-    draft?.titleRegistration ? String(draft.titleRegistration) : '',
+  const [salesTax, setSalesTax] = useState(
+    draft?.salesTax
+      ? String(draft.salesTax)
+      : String(Math.round((draft?.replacementPrice ?? 0) * DEFAULT_SALES_TAX_RATE)),
   );
-  const [docFee, setDocFee] = useState(draft?.docFee ? String(draft.docFee) : '');
+  const [titleRegistration, setTitleRegistration] = useState(
+    draft?.titleRegistration ? String(draft.titleRegistration) : String(DEFAULT_TITLE_REGISTRATION),
+  );
+  const [docFee, setDocFee] = useState(draft?.docFee ? String(draft.docFee) : String(DEFAULT_DOC_FEE));
   const [delivery, setDelivery] = useState(draft?.delivery ? String(draft.delivery) : '');
   const [otherFees, setOtherFees] = useState(draft?.otherFees ? String(draft.otherFees) : '');
 
@@ -50,6 +62,10 @@ export default function ReplacementCostsScreen({ navigation }: Props) {
         <Text style={styles.rowLabel}>Purchase Price</Text>
         <Text style={styles.rowValue}>${draft.replacementPrice.toLocaleString()}</Text>
       </View>
+
+      <Text style={styles.defaultsNote}>
+        We've pre-filled typical nationwide estimates below -- adjust for your state and dealer.
+      </Text>
 
       <Text style={styles.sectionLabel}>Sales Tax</Text>
       <TextInput style={styles.input} placeholder="$ 0" keyboardType="decimal-pad" value={salesTax} onChangeText={setSalesTax} />
@@ -98,6 +114,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#eee' },
   rowLabel: { fontSize: 15, color: '#333' },
   rowValue: { fontSize: 15, fontWeight: '700' },
+  defaultsNote: { fontSize: 12, color: '#888', marginTop: 16, lineHeight: 17 },
   sectionLabel: { fontSize: 13, fontWeight: '700', color: '#666', marginTop: 16, marginBottom: 8 },
   input: {
     borderWidth: 1,
