@@ -9,7 +9,7 @@ type Props = NativeStackScreenProps<AppStackParamList, 'Financing'>;
 type PaymentMethod = 'cash' | 'finance';
 
 export default function FinancingScreen({ navigation }: Props) {
-  const { draft, updateDraft, clearDraft } = useDecisionDraft();
+  const { draft, updateDraft } = useDecisionDraft();
   const [method, setMethod] = useState<PaymentMethod>(draft?.financeMethod ?? 'finance');
   const [downPayment, setDownPayment] = useState(draft?.downPayment ? String(draft.downPayment) : '');
   const [interestRate, setInterestRate] = useState(draft?.interestRate ? String(draft.interestRate) : '');
@@ -32,16 +32,14 @@ export default function FinancingScreen({ navigation }: Props) {
 
   const totalAcquisitionCost = netReplacementAcquisitionCost + totalInterest;
 
-  const vehicleId = draft.vehicleId;
-  function handleFinish() {
+  function handleContinue() {
     updateDraft({
       financeMethod: method,
       downPayment: method === 'finance' ? parsedDownPayment : 0,
       interestRate: method === 'finance' ? parsedInterestRate : 0,
       loanTermMonths: method === 'finance' ? parsedTermMonths : 0,
     });
-    clearDraft();
-    navigation.navigate('VehicleDetail', { vehicleId });
+    navigation.navigate('Analysis');
   }
 
   return (
@@ -107,13 +105,9 @@ export default function FinancingScreen({ navigation }: Props) {
         </View>
       )}
 
-      <Pressable style={styles.primaryButton} onPress={handleFinish}>
-        <Text style={styles.primaryButtonText}>FINISH FOR NOW</Text>
+      <Pressable style={styles.primaryButton} onPress={handleContinue}>
+        <Text style={styles.primaryButtonText}>COMPARE</Text>
       </Pressable>
-      <Text style={styles.comingSoon}>
-        Comparing this against repairing your vehicle is coming in a future update -- everything you entered will be
-        used automatically once that's ready.
-      </Text>
     </ScrollView>
   );
 }
@@ -175,5 +169,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   primaryButtonText: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  comingSoon: { fontSize: 12, color: '#999', textAlign: 'center', marginTop: 16, lineHeight: 18 },
 });

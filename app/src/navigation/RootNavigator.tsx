@@ -22,6 +22,12 @@ import ReplacementPriceScreen from '../decision/ReplacementPriceScreen';
 import ReplacementCostsScreen from '../decision/ReplacementCostsScreen';
 import TradeInScreen from '../decision/TradeInScreen';
 import FinancingScreen from '../decision/FinancingScreen';
+import AnalysisScreen from '../decision/AnalysisScreen';
+import ResultScreen from '../decision/ResultScreen';
+import SideBySideScreen from '../decision/SideBySideScreen';
+import OutlookScreen from '../decision/OutlookScreen';
+import ThresholdScreen from '../decision/ThresholdScreen';
+import type { AnalysisResult } from '../decision/buildCalcInput';
 
 export type AuthStackParamList = {
   Welcome: undefined;
@@ -54,6 +60,11 @@ export type AppStackParamList = {
   ReplacementCosts: undefined;
   TradeIn: undefined;
   Financing: undefined;
+  Analysis: undefined;
+  Result: { result: AnalysisResult };
+  SideBySide: { result: AnalysisResult };
+  Outlook: { result: AnalysisResult };
+  Threshold: { result: AnalysisResult };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -123,6 +134,11 @@ export default function RootNavigator() {
           />
           <AppStack.Screen name="TradeIn" component={TradeInScreen} options={{ title: 'Your Current Vehicle' }} />
           <AppStack.Screen name="Financing" component={FinancingScreen} options={{ title: 'Financing' }} />
+          <AppStack.Screen name="Analysis" component={AnalysisScreen} options={{ title: '', headerShown: false }} />
+          <AppStack.Screen name="Result" component={ResultScreen} options={{ title: 'Fix or Replace?' }} />
+          <AppStack.Screen name="SideBySide" component={SideBySideScreen} options={{ title: 'Your Two Options' }} />
+          <AppStack.Screen name="Outlook" component={OutlookScreen} options={{ title: 'Next 24 Months' }} />
+          <AppStack.Screen name="Threshold" component={ThresholdScreen} options={{ title: 'Repair Threshold' }} />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>
