@@ -17,6 +17,11 @@ import ConfirmRepairScreen from '../decision/ConfirmRepairScreen';
 import VehicleHistoryScreen from '../decision/VehicleHistoryScreen';
 import FinancialsScreen from '../decision/FinancialsScreen';
 import CurrentValueScreen from '../decision/CurrentValueScreen';
+import ReplacementQuestionScreen from '../decision/ReplacementQuestionScreen';
+import ReplacementPriceScreen from '../decision/ReplacementPriceScreen';
+import ReplacementCostsScreen from '../decision/ReplacementCostsScreen';
+import TradeInScreen from '../decision/TradeInScreen';
+import FinancingScreen from '../decision/FinancingScreen';
 
 export type AuthStackParamList = {
   Welcome: undefined;
@@ -44,6 +49,11 @@ export type AppStackParamList = {
   VehicleHistory: undefined;
   Financials: undefined;
   CurrentValue: undefined;
+  ReplacementQuestion: undefined;
+  ReplacementPrice: undefined;
+  ReplacementCosts: undefined;
+  TradeIn: undefined;
+  Financing: undefined;
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -96,6 +106,23 @@ export default function RootNavigator() {
           />
           <AppStack.Screen name="Financials" component={FinancialsScreen} options={{ title: 'Financials' }} />
           <AppStack.Screen name="CurrentValue" component={CurrentValueScreen} options={{ title: 'Vehicle Value' }} />
+          <AppStack.Screen
+            name="ReplacementQuestion"
+            component={ReplacementQuestionScreen}
+            options={{ title: 'If You Replace It' }}
+          />
+          <AppStack.Screen
+            name="ReplacementPrice"
+            component={ReplacementPriceScreen}
+            options={{ title: 'Replacement Vehicle' }}
+          />
+          <AppStack.Screen
+            name="ReplacementCosts"
+            component={ReplacementCostsScreen}
+            options={{ title: 'Real Cost to Replace' }}
+          />
+          <AppStack.Screen name="TradeIn" component={TradeInScreen} options={{ title: 'Your Current Vehicle' }} />
+          <AppStack.Screen name="Financing" component={FinancingScreen} options={{ title: 'Financing' }} />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>

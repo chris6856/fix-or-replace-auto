@@ -8,7 +8,7 @@ import { useVehicle } from '../garage/useVehicles';
 type Props = NativeStackScreenProps<AppStackParamList, 'CurrentValue'>;
 
 export default function CurrentValueScreen({ navigation }: Props) {
-  const { draft, updateDraft, clearDraft } = useDecisionDraft();
+  const { draft, updateDraft } = useDecisionDraft();
   const { data: vehicle } = useVehicle(draft?.vehicleId ?? '');
   const [workingValue, setWorkingValue] = useState(
     draft?.currentVehicleValueWorking ? String(draft.currentVehicleValueWorking) : '',
@@ -24,11 +24,9 @@ export default function CurrentValueScreen({ navigation }: Props) {
   const high = Math.round(parsedValue * 1.15);
   const equity = parsedValue - draft.loanPayoff;
 
-  const vehicleId = draft.vehicleId;
-  function handleFinish() {
+  function handleContinue() {
     updateDraft({ currentVehicleValueWorking: parsedValue, currentVehicleValueLow: low, currentVehicleValueHigh: high });
-    clearDraft();
-    navigation.navigate('VehicleDetail', { vehicleId });
+    navigation.navigate('ReplacementQuestion');
   }
 
   return (
@@ -65,13 +63,9 @@ export default function CurrentValueScreen({ navigation }: Props) {
         </View>
       )}
 
-      <Pressable style={styles.primaryButton} onPress={handleFinish} disabled={parsedValue <= 0}>
-        <Text style={styles.primaryButtonText}>FINISH FOR NOW</Text>
+      <Pressable style={styles.primaryButton} onPress={handleContinue} disabled={parsedValue <= 0}>
+        <Text style={styles.primaryButtonText}>CONTINUE</Text>
       </Pressable>
-      <Text style={styles.comingSoon}>
-        Comparing this against a replacement vehicle is coming in a future update -- everything you entered will carry
-        over automatically once that's ready.
-      </Text>
     </View>
   );
 }
@@ -108,5 +102,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   primaryButtonText: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  comingSoon: { fontSize: 12, color: '#999', textAlign: 'center', marginTop: 16, lineHeight: 18 },
 });

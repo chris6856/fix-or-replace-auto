@@ -27,9 +27,9 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
     );
   }
 
-  const { currentMileage } = vehicle;
+  const { year: vehicleYear, currentMileage } = vehicle;
   function handleStartRepairIntake() {
-    startDraft(vehicleId, currentMileage);
+    startDraft(vehicleId, vehicleYear, currentMileage);
     navigation.navigate('MileageCheck');
   }
 
