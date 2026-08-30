@@ -2,12 +2,14 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useVehicle } from './useVehicles';
+import { useDecisionDraft } from '../decision/DecisionDraftContext';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'VehicleDetail'>;
 
-export default function VehicleDetailScreen({ route }: Props) {
+export default function VehicleDetailScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
   const { data: vehicle, isLoading, error } = useVehicle(vehicleId);
+  const { startDraft } = useDecisionDraft();
 
   if (isLoading) {
     return (
@@ -25,6 +27,12 @@ export default function VehicleDetailScreen({ route }: Props) {
     );
   }
 
+  const { currentMileage } = vehicle;
+  function handleStartRepairIntake() {
+    startDraft(vehicleId, currentMileage);
+    navigation.navigate('MileageCheck');
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{vehicle.nickname ?? `${vehicle.year} ${vehicle.make} ${vehicle.model}`}</Text>
@@ -34,10 +42,8 @@ export default function VehicleDetailScreen({ route }: Props) {
       </Text>
       <Text style={styles.mileage}>{vehicle.currentMileage.toLocaleString()} miles</Text>
 
-      {/* The repair intake flow (blueprint Screens 9-14) lands in milestone 5. */}
-      <Pressable style={styles.disabledButton} disabled>
-        <Text style={styles.disabledButtonText}>I HAVE A REPAIR ESTIMATE</Text>
-        <Text style={styles.comingSoon}>Coming soon</Text>
+      <Pressable style={styles.primaryButton} onPress={handleStartRepairIntake}>
+        <Text style={styles.primaryButtonText}>I HAVE A REPAIR ESTIMATE</Text>
       </Pressable>
 
       <Text style={styles.sectionLabel}>Previous Decisions</Text>
@@ -53,15 +59,14 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '800' },
   subtitle: { fontSize: 15, color: '#555', marginTop: 4 },
   mileage: { fontSize: 15, color: '#555', marginTop: 2, marginBottom: 24 },
-  disabledButton: {
+  primaryButton: {
     height: 56,
     borderRadius: 8,
-    backgroundColor: '#eee',
+    backgroundColor: '#111',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  disabledButtonText: { fontSize: 15, fontWeight: '700', color: '#999' },
-  comingSoon: { fontSize: 11, color: '#aaa', marginTop: 2 },
+  primaryButtonText: { fontSize: 15, fontWeight: '700', color: '#fff' },
   sectionLabel: { fontSize: 13, fontWeight: '700', color: '#666', marginTop: 32, marginBottom: 8 },
   emptyText: { fontSize: 14, color: '#999' },
 });

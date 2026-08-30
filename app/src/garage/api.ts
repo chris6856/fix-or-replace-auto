@@ -112,3 +112,22 @@ export async function updateVehicleMileage(id: string, currentMileage: number): 
   if (error) throw error;
   return rowToVehicle(data as VehicleRow);
 }
+
+export async function updateVehicleFinancials(
+  id: string,
+  fields: { currentLoanPayoff: number; condition: VehicleCondition; reliabilityBucket: ReliabilityBucket },
+): Promise<Vehicle> {
+  const { data, error } = await supabase
+    .from('vehicles')
+    .update({
+      current_loan_payoff: fields.currentLoanPayoff,
+      condition: fields.condition,
+      reliability_bucket: fields.reliabilityBucket,
+    })
+    .eq('id', id)
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return rowToVehicle(data as VehicleRow);
+}

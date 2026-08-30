@@ -11,6 +11,12 @@ import ConfirmVehicleScreen from '../garage/ConfirmVehicleScreen';
 import VehicleProfileScreen from '../garage/VehicleProfileScreen';
 import VehicleDetailScreen from '../garage/VehicleDetailScreen';
 import type { DecodedVehicle } from '../garage/vinDecode';
+import MileageCheckScreen from '../decision/MileageCheckScreen';
+import RepairEstimateScreen from '../decision/RepairEstimateScreen';
+import ConfirmRepairScreen from '../decision/ConfirmRepairScreen';
+import VehicleHistoryScreen from '../decision/VehicleHistoryScreen';
+import FinancialsScreen from '../decision/FinancialsScreen';
+import CurrentValueScreen from '../decision/CurrentValueScreen';
 
 export type AuthStackParamList = {
   Welcome: undefined;
@@ -32,6 +38,12 @@ export type AppStackParamList = {
   ConfirmVehicle: { decoded: DecodedVehicle };
   VehicleProfile: { draft: VehicleDraft };
   VehicleDetail: { vehicleId: string };
+  MileageCheck: undefined;
+  RepairEstimate: undefined;
+  ConfirmRepair: undefined;
+  VehicleHistory: undefined;
+  Financials: undefined;
+  CurrentValue: undefined;
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -66,6 +78,24 @@ export default function RootNavigator() {
             options={{ title: 'Vehicle Profile' }}
           />
           <AppStack.Screen name="VehicleDetail" component={VehicleDetailScreen} options={{ title: 'Vehicle' }} />
+          <AppStack.Screen name="MileageCheck" component={MileageCheckScreen} options={{ title: 'Current Mileage' }} />
+          <AppStack.Screen
+            name="RepairEstimate"
+            component={RepairEstimateScreen}
+            options={{ title: 'What Did the Shop Say?' }}
+          />
+          <AppStack.Screen
+            name="ConfirmRepair"
+            component={ConfirmRepairScreen}
+            options={{ title: "Here's What We Heard" }}
+          />
+          <AppStack.Screen
+            name="VehicleHistory"
+            component={VehicleHistoryScreen}
+            options={{ title: 'Vehicle History' }}
+          />
+          <AppStack.Screen name="Financials" component={FinancialsScreen} options={{ title: 'Financials' }} />
+          <AppStack.Screen name="CurrentValue" component={CurrentValueScreen} options={{ title: 'Vehicle Value' }} />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>

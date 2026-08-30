@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/auth/AuthContext';
 import { configureGoogleSignIn } from './src/auth/socialSignIn';
+import { DecisionDraftProvider } from './src/decision/DecisionDraftContext';
 import RootNavigator from './src/navigation/RootNavigator';
 
 configureGoogleSignIn();
@@ -14,7 +15,9 @@ export default function App() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <RootNavigator />
+          <DecisionDraftProvider>
+            <RootNavigator />
+          </DecisionDraftProvider>
         </AuthProvider>
       </QueryClientProvider>
       <StatusBar style="auto" />
