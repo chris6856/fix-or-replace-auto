@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
-import TextRecognition from '@react-native-ml-kit/text-recognition';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { decodeVin, extractVinCandidate, VinDecodeError } from './vinDecode';
@@ -42,6 +41,22 @@ export default function ScanVinScreen({ navigation }: Props) {
     if (isProcessing || !cameraRef.current) return;
     setIsProcessing(true);
     setError(null);
+
+    // Loaded lazily -- this third-party native module isn't part of Expo's
+    // SDK, so it isn't included in plain Expo Go. Deferring the import to
+    // the moment text-scan is actually used means barcode scanning (which
+    // doesn't need it) keeps working there, and a real dev-client build
+    // missing the module fails with a clear message instead of crashing
+    // the whole app at startup.
+    let TextRecognition: (typeof import('@react-native-ml-kit/text-recognition'))['default'];
+    try {
+      TextRecognition = (await import('@react-native-ml-kit/text-recognition')).default;
+    } catch {
+      setError("Text scanning isn't available in this build. Try the barcode option or enter manually.");
+      setIsProcessing(false);
+      return;
+    }
+
     try {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
       if (!photo) throw new Error('No photo captured.');
