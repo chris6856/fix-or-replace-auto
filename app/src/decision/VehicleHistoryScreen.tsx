@@ -4,6 +4,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { ReliabilityBucket } from '@fixorreplace/types';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useDecisionDraft } from './DecisionDraftContext';
+import { useDecisionHistory, sumRecentRepairs } from './decisionHistory';
+import { formatCurrency } from './explainResult';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'VehicleHistory'>;
 
@@ -17,6 +19,9 @@ type RecentRepairsAnswer = 'amount' | 'none' | 'not_sure';
 
 export default function VehicleHistoryScreen({ navigation }: Props) {
   const { draft, updateDraft } = useDecisionDraft();
+  const { data: history } = useDecisionHistory(draft?.vehicleId ?? '');
+  const recordedRecentRepairs = history ? sumRecentRepairs(history) : 0;
+
   const [reliabilityBucket, setReliabilityBucket] = useState<ReliabilityBucket | null>(draft?.reliabilityBucket ?? null);
   const [recentRepairsAnswer, setRecentRepairsAnswer] = useState<RecentRepairsAnswer>(
     draft && draft.recentRepairsSum > 0 ? 'amount' : 'not_sure',
@@ -24,9 +29,18 @@ export default function VehicleHistoryScreen({ navigation }: Props) {
   const [recentRepairsAmount, setRecentRepairsAmount] = useState(
     draft && draft.recentRepairsSum > 0 ? String(draft.recentRepairsSum) : '',
   );
+  const [hasAdjustedAmount, setHasAdjustedAmount] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!draft) return null;
+
+  // If we already have recorded repair history and the user hasn't typed
+  // anything of their own yet, default to it -- matches the blueprint's
+  // "We have $X in repairs recorded... Is that approximately correct?"
+  if (recordedRecentRepairs > 0 && recentRepairsAnswer === 'not_sure' && !hasAdjustedAmount) {
+    setRecentRepairsAnswer('amount');
+    setRecentRepairsAmount(String(recordedRecentRepairs));
+  }
 
   function handleContinue() {
     if (!reliabilityBucket) {
@@ -59,12 +73,21 @@ export default function VehicleHistoryScreen({ navigation }: Props) {
       ))}
 
       <Text style={styles.sectionLabel}>Major repairs in the last 12 months</Text>
+      {recordedRecentRepairs > 0 && (
+        <Text style={styles.recordedNote}>
+          We have {formatCurrency(recordedRecentRepairs)} in repairs recorded during the past 12 months. Is that
+          approximately correct?
+        </Text>
+      )}
       <View style={styles.optionsRow}>
         {(['amount', 'none', 'not_sure'] as const).map((option) => (
           <Pressable
             key={option}
             style={[styles.optionChip, recentRepairsAnswer === option && styles.optionChipSelected]}
-            onPress={() => setRecentRepairsAnswer(option)}
+            onPress={() => {
+              setHasAdjustedAmount(true);
+              setRecentRepairsAnswer(option);
+            }}
           >
             <Text style={[styles.optionChipText, recentRepairsAnswer === option && styles.optionChipTextSelected]}>
               {option === 'amount' ? '$ Amount' : option === 'none' ? 'None' : 'Not Sure'}
@@ -78,7 +101,10 @@ export default function VehicleHistoryScreen({ navigation }: Props) {
           placeholder="$ 0"
           keyboardType="decimal-pad"
           value={recentRepairsAmount}
-          onChangeText={setRecentRepairsAmount}
+          onChangeText={(text) => {
+            setHasAdjustedAmount(true);
+            setRecentRepairsAmount(text);
+          }}
         />
       )}
 
@@ -95,6 +121,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff' },
   title: { fontSize: 20, fontWeight: '800', marginBottom: 4 },
   subtitle: { fontSize: 14, color: '#666', marginBottom: 16 },
+  recordedNote: { fontSize: 13, color: '#555', marginBottom: 8, lineHeight: 18 },
   reliabilityCard: {
     borderWidth: 1,
     borderColor: '#e2e2e2',

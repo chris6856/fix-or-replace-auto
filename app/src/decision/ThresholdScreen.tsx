@@ -1,7 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
-import { useDecisionDraft } from './DecisionDraftContext';
 import RecommendationBadge from './RecommendationBadge';
 import { formatCurrency } from './explainResult';
 
@@ -10,18 +9,10 @@ type Props = NativeStackScreenProps<AppStackParamList, 'Threshold'>;
 export default function ThresholdScreen({ route, navigation }: Props) {
   const { result } = route.params;
   const { input, output } = result;
-  const { draft, clearDraft } = useDecisionDraft();
 
   const estimate = input.keep.currentRepairCost;
   const margin = Math.abs(output.repairThreshold - estimate);
   const isBelow = estimate <= output.repairThreshold;
-
-  function handleDone() {
-    const vehicleId = draft?.vehicleId;
-    clearDraft();
-    if (vehicleId) navigation.navigate('VehicleDetail', { vehicleId });
-    else navigation.navigate('Garage');
-  }
 
   return (
     <View style={styles.container}>
@@ -44,8 +35,8 @@ export default function ThresholdScreen({ route, navigation }: Props) {
       <Pressable style={styles.primaryButton} onPress={() => navigation.navigate('WhatIf', { result })}>
         <Text style={styles.primaryButtonText}>CHANGE THE NUMBERS</Text>
       </Pressable>
-      <Pressable style={styles.secondaryButton} onPress={handleDone}>
-        <Text style={styles.secondaryButtonText}>DONE FOR NOW</Text>
+      <Pressable style={styles.secondaryButton} onPress={() => navigation.navigate('Why', { result })}>
+        <Text style={styles.secondaryButtonText}>CONTINUE</Text>
       </Pressable>
     </View>
   );

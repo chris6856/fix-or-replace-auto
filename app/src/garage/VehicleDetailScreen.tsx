@@ -1,14 +1,18 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useVehicle } from './useVehicles';
 import { useDecisionDraft } from '../decision/DecisionDraftContext';
+import { useDecisionHistory, type DecisionHistoryItem } from '../decision/decisionHistory';
+import { recommendationLabel } from '../decision/RecommendationBadge';
+import { formatCurrency } from '../decision/explainResult';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'VehicleDetail'>;
 
 export default function VehicleDetailScreen({ route, navigation }: Props) {
   const { vehicleId } = route.params;
   const { data: vehicle, isLoading, error } = useVehicle(vehicleId);
+  const { data: history } = useDecisionHistory(vehicleId);
   const { startDraft } = useDecisionDraft();
 
   if (isLoading) {
@@ -47,7 +51,34 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
       </Pressable>
 
       <Text style={styles.sectionLabel}>Previous Decisions</Text>
-      <Text style={styles.emptyText}>None yet.</Text>
+      {!history || history.length === 0 ? (
+        <Text style={styles.emptyText}>None yet.</Text>
+      ) : (
+        <FlatList
+          data={history}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <DecisionRow item={item} />}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+        />
+      )}
+    </View>
+  );
+}
+
+function DecisionRow({ item }: { item: DecisionHistoryItem }) {
+  const date = new Date(item.createdAt).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+  return (
+    <View style={styles.decisionRow}>
+      <Text style={styles.decisionDate}>{date}</Text>
+      <Text style={styles.decisionCategory}>{item.category}</Text>
+      <View style={styles.decisionFooter}>
+        <Text style={styles.decisionCost}>{formatCurrency(item.cost)}</Text>
+        <Text style={styles.decisionRecommendation}>{recommendationLabel(item.recommendation)}</Text>
+      </View>
     </View>
   );
 }
@@ -69,4 +100,16 @@ const styles = StyleSheet.create({
   primaryButtonText: { fontSize: 15, fontWeight: '700', color: '#fff' },
   sectionLabel: { fontSize: 13, fontWeight: '700', color: '#666', marginTop: 32, marginBottom: 8 },
   emptyText: { fontSize: 14, color: '#999' },
+  separator: { height: 10 },
+  decisionRow: {
+    borderWidth: 1,
+    borderColor: '#e2e2e2',
+    borderRadius: 10,
+    padding: 12,
+  },
+  decisionDate: { fontSize: 12, color: '#999' },
+  decisionCategory: { fontSize: 15, fontWeight: '700', marginTop: 2 },
+  decisionFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
+  decisionCost: { fontSize: 14, color: '#333' },
+  decisionRecommendation: { fontSize: 13, fontWeight: '700' },
 });

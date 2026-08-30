@@ -3,7 +3,6 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 import { computeDecision } from '@fixorreplace/calc-engine';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
-import { useDecisionDraft } from './DecisionDraftContext';
 import RecommendationBadge from './RecommendationBadge';
 import { formatCurrency } from './explainResult';
 
@@ -13,11 +12,12 @@ type Props = NativeStackScreenProps<AppStackParamList, 'WhatIf'>;
  * A sandbox, not a re-entry into the saved flow -- editing here never
  * writes back to DecisionDraft. Recalculation is instant because
  * computeDecision() is a pure, dependency-free function (see build plan
- * section 3); there's nothing to await.
+ * section 3); there's nothing to await. Continuing always carries the
+ * ORIGINAL (unedited) result forward -- what gets saved later is the real
+ * analysis, not whatever the user was exploring here.
  */
 export default function WhatIfScreen({ route, navigation }: Props) {
   const { result: original } = route.params;
-  const { draft, clearDraft } = useDecisionDraft();
 
   const [repairCost, setRepairCost] = useState(String(original.input.keep.currentRepairCost));
   const [replacementPrice, setReplacementPrice] = useState(String(original.input.replace.replacementPrice));
@@ -48,11 +48,8 @@ export default function WhatIfScreen({ route, navigation }: Props) {
     setInterestRate(String(original.input.replace.interestRate));
   }
 
-  function handleDone() {
-    const vehicleId = draft?.vehicleId;
-    clearDraft();
-    if (vehicleId) navigation.navigate('VehicleDetail', { vehicleId });
-    else navigation.navigate('Garage');
+  function handleContinue() {
+    navigation.navigate('Why', { result: original });
   }
 
   return (
@@ -83,8 +80,8 @@ export default function WhatIfScreen({ route, navigation }: Props) {
       <Pressable style={styles.secondaryButton} onPress={handleReset}>
         <Text style={styles.secondaryButtonText}>RESET TO ORIGINAL</Text>
       </Pressable>
-      <Pressable style={styles.primaryButton} onPress={handleDone}>
-        <Text style={styles.primaryButtonText}>DONE</Text>
+      <Pressable style={styles.primaryButton} onPress={handleContinue}>
+        <Text style={styles.primaryButtonText}>CONTINUE</Text>
       </Pressable>
     </ScrollView>
   );

@@ -28,6 +28,9 @@ import SideBySideScreen from '../decision/SideBySideScreen';
 import OutlookScreen from '../decision/OutlookScreen';
 import ThresholdScreen from '../decision/ThresholdScreen';
 import WhatIfScreen from '../decision/WhatIfScreen';
+import WhyScreen from '../decision/WhyScreen';
+import QuestionsScreen from '../decision/QuestionsScreen';
+import SaveDecisionScreen from '../decision/SaveDecisionScreen';
 import type { AnalysisResult } from '../decision/buildCalcInput';
 
 export type AuthStackParamList = {
@@ -67,6 +70,9 @@ export type AppStackParamList = {
   Outlook: { result: AnalysisResult };
   Threshold: { result: AnalysisResult };
   WhatIf: { result: AnalysisResult };
+  Why: { result: AnalysisResult };
+  Questions: { result: AnalysisResult; explanation: string };
+  SaveDecision: { result: AnalysisResult; explanation: string };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -142,6 +148,13 @@ export default function RootNavigator() {
           <AppStack.Screen name="Outlook" component={OutlookScreen} options={{ title: 'Next 24 Months' }} />
           <AppStack.Screen name="Threshold" component={ThresholdScreen} options={{ title: 'Repair Threshold' }} />
           <AppStack.Screen name="WhatIf" component={WhatIfScreen} options={{ title: 'Change the Numbers' }} />
+          <AppStack.Screen name="Why" component={WhyScreen} options={{ title: 'Why?' }} />
+          <AppStack.Screen name="Questions" component={QuestionsScreen} options={{ title: 'Before You Say Yes' }} />
+          <AppStack.Screen
+            name="SaveDecision"
+            component={SaveDecisionScreen}
+            options={{ title: 'Save This Decision?' }}
+          />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>
