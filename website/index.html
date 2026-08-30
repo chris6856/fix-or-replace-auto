@@ -64,7 +64,7 @@
     background: var(--paper);
     color: var(--ink);
     font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-    font-size: 19px;
+    font-size: 21.5px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
@@ -85,7 +85,7 @@
   .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
   .eyebrow {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 14px;
+    font-size: 16px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--steel);
@@ -107,13 +107,13 @@
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
   .brand svg { width: 30px; height: 30px; }
   .brand-name {
-    font-family: 'Source Serif 4', Georgia, serif; font-weight: 800; font-size: 19px;
+    font-family: 'Source Serif 4', Georgia, serif; font-weight: 800; font-size: 21.5px;
     letter-spacing: -0.01em; color: var(--ink);
   }
   .nav-links { display: flex; gap: 28px; align-items: center; }
   .nav-links a {
     text-decoration: none; font-family: 'IBM Plex Mono', monospace;
-    font-size: 14.5px; letter-spacing: 0.03em; color: var(--steel);
+    font-size: 16.5px; letter-spacing: 0.03em; color: var(--steel);
   }
   .nav-links a:hover { color: var(--ink); }
   @media (max-width: 640px) { .nav-links { display: none; } }
@@ -130,24 +130,24 @@
   .hero { padding: 76px 0 88px; }
   .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
   @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; gap: 44px; } }
-  .hero h1 { font-size: clamp(2.8rem, 5.2vw, 4rem); line-height: 1.04; }
+  .hero h1 { font-size: clamp(3.1rem, 5.6vw, 4.4rem); line-height: 1.04; }
   .hero h1 em {
     font-style: normal; color: var(--amber-ink); background: var(--amber-tint);
     padding: 0 6px; border-radius: 3px;
   }
   .hero-sub {
-    margin-top: 20px; max-width: 46ch; color: var(--ink-soft); font-size: 21px;
+    margin-top: 20px; max-width: 46ch; color: var(--ink-soft); font-size: 23.5px;
   }
   .hero-ctas { margin-top: 32px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
   .btn-primary {
-    font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 16.5px;
+    font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 19px;
     text-decoration: none; color: var(--paper); background: var(--ink);
     padding: 14px 24px; border-radius: 4px; letter-spacing: 0.01em;
     display: inline-block;
   }
   .btn-primary:hover { background: var(--amber-ink); }
   .coming-soon {
-    font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: var(--steel);
+    font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: var(--steel);
     border: 1px solid var(--panel-line); padding: 13px 18px; border-radius: 4px;
     letter-spacing: 0.04em;
   }
@@ -160,23 +160,23 @@
   }
   .estimate-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
   .estimate-head .eyebrow { color: var(--steel); }
-  .estimate-vehicle { font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 17px; margin-top: 2px; }
+  .estimate-vehicle { font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 19.5px; margin-top: 2px; }
   .estimate-rule { border: none; border-top: 1px dashed var(--panel-line); margin: 16px 0; }
   .estimate-row {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 9px 0; font-size: 17px;
+    padding: 9px 0; font-size: 19.5px;
   }
   .estimate-row .label { color: var(--ink-soft); }
   .estimate-row .value { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-variant-numeric: tabular-nums; }
   .estimate-row.total { border-top: 1px solid var(--panel-line); margin-top: 6px; padding-top: 14px; }
-  .estimate-row.total .label { font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; color: var(--ink); font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
-  .estimate-row.total .value { font-size: 21px; }
+  .estimate-row.total .label { font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; color: var(--ink); font-size: 17px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .estimate-row.total .value { font-size: 23.5px; }
   .estimate-verdict {
     margin-top: 18px; display: flex; align-items: center; gap: 10px;
     background: var(--green-tint); border-radius: 5px; padding: 12px 14px;
   }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-  .estimate-verdict p { margin: 0; font-size: 16px; color: var(--ink); }
+  .estimate-verdict p { margin: 0; font-size: 18px; color: var(--ink); }
   .estimate-verdict strong { font-family: 'Source Serif 4', Georgia, serif; }
 
   /* ---------- Photo band ---------- */
@@ -188,14 +188,14 @@
     position: absolute; left: 0; right: 0; bottom: 0;
     background: linear-gradient(to top, rgba(10,12,13,0.72), transparent);
     color: #F4F6F5; padding: 34px 22px 16px; font-family: 'IBM Plex Mono', monospace;
-    font-size: 14px; letter-spacing: 0.04em;
+    font-size: 16px; letter-spacing: 0.04em;
   }
 
   /* ---------- Section shell ---------- */
   section.block { padding: 90px 0; }
   .block-head { max-width: 640px; margin-bottom: 48px; }
-  .block-head h2 { font-size: clamp(1.9rem, 3.2vw, 2.6rem); margin-top: 10px; }
-  .block-head p { color: var(--ink-soft); margin-top: 14px; font-size: 19px; }
+  .block-head h2 { font-size: clamp(2.1rem, 3.6vw, 2.9rem); margin-top: 10px; }
+  .block-head p { color: var(--ink-soft); margin-top: 14px; font-size: 21.5px; }
   .divider { border: none; border-top: 1px solid var(--panel-line); }
 
   /* ---------- Problem ---------- */
@@ -204,9 +204,9 @@
   .problem-card {
     border-top: 3px solid var(--amber); padding-top: 16px;
   }
-  .problem-card .num { font-family: 'IBM Plex Mono', monospace; color: var(--amber-ink); font-size: 14.5px; }
-  .problem-card h3 { font-size: 21px; margin-top: 10px; }
-  .problem-card p { color: var(--ink-soft); margin-top: 8px; font-size: 17.5px; }
+  .problem-card .num { font-family: 'IBM Plex Mono', monospace; color: var(--amber-ink); font-size: 16.5px; }
+  .problem-card h3 { font-size: 23.5px; margin-top: 10px; }
+  .problem-card p { color: var(--ink-soft); margin-top: 8px; font-size: 20px; }
 
   /* ---------- How it works ---------- */
   .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border: 1px solid var(--panel-line); border-radius: 8px; overflow: hidden; }
@@ -217,14 +217,14 @@
   }
   .step:last-child { border-right: none; }
   .step .step-num {
-    font-family: 'IBM Plex Mono', monospace; font-size: 29px; font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace; font-size: 32px; font-weight: 600;
     color: var(--panel-line); line-height: 1;
   }
   :root[data-theme="dark"] .step .step-num, :root:not([data-theme="light"]) .step .step-num {
     @media (prefers-color-scheme: dark) { color: var(--steel-soft); opacity: 0.4; }
   }
-  .step h3 { font-size: 18px; margin-top: 14px; }
-  .step p { font-size: 16.5px; color: var(--ink-soft); margin-top: 8px; }
+  .step h3 { font-size: 20.5px; margin-top: 14px; }
+  .step p { font-size: 19px; color: var(--ink-soft); margin-top: 8px; }
 
   /* ---------- Recommendation states ---------- */
   .states { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
@@ -237,28 +237,28 @@
   .state-card.quote .dot { background: var(--amber); }
   .state-card.replace .dot { background: #B24A3C; }
   .state-card.close .dot { background: var(--steel-soft); }
-  .state-card h3 { font-family: 'Source Serif 4', Georgia, serif; font-size: 16.5px; letter-spacing: 0.02em; text-transform: uppercase; }
-  .state-card p { font-size: 16px; color: var(--ink-soft); margin-top: 8px; }
+  .state-card h3 { font-family: 'Source Serif 4', Georgia, serif; font-size: 19px; letter-spacing: 0.02em; text-transform: uppercase; }
+  .state-card p { font-size: 18px; color: var(--ink-soft); margin-top: 8px; }
 
   .principle {
     margin-top: 56px; border: 1px solid var(--panel-line); border-radius: 8px;
     padding: 32px; display: grid; grid-template-columns: auto 1fr; gap: 26px; align-items: center;
   }
   @media (max-width: 640px) { .principle { grid-template-columns: 1fr; } }
-  .principle .mark { font-family: 'Source Serif 4', Georgia, serif; font-weight: 900; font-size: 17px; color: var(--amber-ink); white-space: nowrap; }
-  .principle p { margin: 0; font-size: 19px; color: var(--ink-soft); }
+  .principle .mark { font-family: 'Source Serif 4', Georgia, serif; font-weight: 900; font-size: 19.5px; color: var(--amber-ink); white-space: nowrap; }
+  .principle p { margin: 0; font-size: 21.5px; color: var(--ink-soft); }
   .principle strong { color: var(--ink); }
 
   /* ---------- CTA ---------- */
   .cta-block { background: var(--ink); color: var(--paper); padding: 88px 0; }
   .cta-block .wrap { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; }
   @media (max-width: 800px) { .cta-block .wrap { grid-template-columns: 1fr; } }
-  .cta-block h2 { color: var(--paper); font-size: clamp(2rem, 3.4vw, 2.7rem); }
+  .cta-block h2 { color: var(--paper); font-size: clamp(2.2rem, 3.8vw, 3rem); }
   .cta-block .eyebrow { color: #9AA8AC; }
-  .cta-block p.sub { color: #C3CBCE; margin-top: 14px; font-size: 19px; max-width: 42ch; }
+  .cta-block p.sub { color: #C3CBCE; margin-top: 14px; font-size: 21.5px; max-width: 42ch; }
   .cta-receipt {
     border: 1px dashed #3A4248; border-radius: 8px; padding: 22px;
-    font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #C3CBCE;
+    font-family: 'IBM Plex Mono', monospace; font-size: 17px; color: #C3CBCE;
   }
   .cta-receipt .r { display: flex; justify-content: space-between; padding: 6px 0; }
   .cta-receipt .r.total { border-top: 1px solid #3A4248; margin-top: 6px; padding-top: 12px; color: var(--paper); font-weight: 600; }
@@ -270,9 +270,9 @@
     padding-top: 26px; border-top: 1px solid var(--panel-line);
   }
   .footer-links { display: flex; gap: 22px; }
-  .footer-links a { font-family: 'IBM Plex Mono', monospace; font-size: 14.5px; color: var(--steel); text-decoration: none; }
+  .footer-links a { font-family: 'IBM Plex Mono', monospace; font-size: 16.5px; color: var(--steel); text-decoration: none; }
   .footer-links a:hover { color: var(--ink); }
-  .footer-fine { font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: var(--steel-soft); }
+  .footer-fine { font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: var(--steel-soft); }
 </style>
 </head>
 <body>
