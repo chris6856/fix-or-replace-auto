@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#fff' },
   // Faded well below full opacity so the text on top stays the clearly
   // prominent element -- the photo reads as mood/texture, not content.
-  backgroundImage: { opacity: 0.16 },
+  backgroundImage: { opacity: 0.26 },
   title: { fontSize: 28, fontWeight: '800', textAlign: 'center', marginBottom: 8 },
   tagline: { fontSize: 16, textAlign: 'center', color: '#555', marginBottom: 32 },
   body: { fontSize: 16, textAlign: 'center', marginBottom: 16, color: '#333' },
