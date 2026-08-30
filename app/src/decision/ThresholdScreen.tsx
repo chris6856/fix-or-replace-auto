@@ -41,12 +41,12 @@ export default function ThresholdScreen({ route, navigation }: Props) {
         <RecommendationBadge recommendation={output.recommendation} />
       </View>
 
-      <Pressable style={styles.primaryButton} onPress={handleDone}>
-        <Text style={styles.primaryButtonText}>DONE FOR NOW</Text>
+      <Pressable style={styles.primaryButton} onPress={() => navigation.navigate('WhatIf', { result })}>
+        <Text style={styles.primaryButtonText}>CHANGE THE NUMBERS</Text>
       </Pressable>
-      <Text style={styles.comingSoon}>
-        Changing the numbers to find your own tipping point (What-If) is coming in a future update.
-      </Text>
+      <Pressable style={styles.secondaryButton} onPress={handleDone}>
+        <Text style={styles.secondaryButtonText}>DONE FOR NOW</Text>
+      </Pressable>
     </View>
   );
 }
@@ -73,5 +73,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   primaryButtonText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  comingSoon: { fontSize: 12, color: '#999', textAlign: 'center', marginTop: 16, lineHeight: 18 },
+  secondaryButton: {
+    marginTop: 12,
+    height: 48,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryButtonText: { fontSize: 14, fontWeight: '700', color: '#333' },
 });

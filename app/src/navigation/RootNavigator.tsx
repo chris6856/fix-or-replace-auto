@@ -27,6 +27,7 @@ import ResultScreen from '../decision/ResultScreen';
 import SideBySideScreen from '../decision/SideBySideScreen';
 import OutlookScreen from '../decision/OutlookScreen';
 import ThresholdScreen from '../decision/ThresholdScreen';
+import WhatIfScreen from '../decision/WhatIfScreen';
 import type { AnalysisResult } from '../decision/buildCalcInput';
 
 export type AuthStackParamList = {
@@ -65,6 +66,7 @@ export type AppStackParamList = {
   SideBySide: { result: AnalysisResult };
   Outlook: { result: AnalysisResult };
   Threshold: { result: AnalysisResult };
+  WhatIf: { result: AnalysisResult };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -139,6 +141,7 @@ export default function RootNavigator() {
           <AppStack.Screen name="SideBySide" component={SideBySideScreen} options={{ title: 'Your Two Options' }} />
           <AppStack.Screen name="Outlook" component={OutlookScreen} options={{ title: 'Next 24 Months' }} />
           <AppStack.Screen name="Threshold" component={ThresholdScreen} options={{ title: 'Repair Threshold' }} />
+          <AppStack.Screen name="WhatIf" component={WhatIfScreen} options={{ title: 'Change the Numbers' }} />
         </AppStack.Navigator>
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>
