@@ -1,31 +1,73 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useDecisionDraft } from './DecisionDraftContext';
 import { useVehicle } from '../garage/useVehicles';
+import { marketCheckValuationProvider } from './marketCheckValuationProvider';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'CurrentValue'>;
+type FetchState = 'loading' | 'fetched' | 'unavailable';
 
 export default function CurrentValueScreen({ navigation }: Props) {
   const { draft, updateDraft } = useDecisionDraft();
   const { data: vehicle } = useVehicle(draft?.vehicleId ?? '');
+
   const [workingValue, setWorkingValue] = useState(
     draft?.currentVehicleValueWorking ? String(draft.currentVehicleValueWorking) : '',
   );
+  const [fetchState, setFetchState] = useState<FetchState>('loading');
+  const [fetchedRange, setFetchedRange] = useState<{ low: number; high: number } | null>(null);
+  const [fetchedTradeValue, setFetchedTradeValue] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!vehicle || !draft) return;
+
+    let cancelled = false;
+    marketCheckValuationProvider
+      .getValuation({
+        vin: vehicle.vin,
+        year: vehicle.year,
+        make: vehicle.make,
+        model: vehicle.model,
+        trim: vehicle.trim,
+        mileage: draft.currentMileage,
+        zip: vehicle.zip,
+        condition: draft.conditionBeforeThisProblem ?? vehicle.condition,
+      })
+      .then((valuation) => {
+        if (cancelled) return;
+        setWorkingValue(String(valuation.workingValue));
+        setFetchedRange({ low: valuation.valueLow, high: valuation.valueHigh });
+        setFetchedTradeValue(valuation.tradeValue);
+        setFetchState('fetched');
+      })
+      .catch(() => {
+        if (!cancelled) setFetchState('unavailable');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vehicle]);
 
   if (!draft) return null;
 
   const parsedValue = Number(workingValue) || 0;
-  // Manual entry for now -- see build plan milestone 10 ("valuation provider
-  // swap-in"), which replaces this with a real fetched value behind the
-  // VehicleValuationProvider interface without touching this screen's UI.
-  const low = Math.round(parsedValue * 0.85);
-  const high = Math.round(parsedValue * 1.15);
+  const low = fetchedRange?.low ?? Math.round(parsedValue * 0.85);
+  const high = fetchedRange?.high ?? Math.round(parsedValue * 1.15);
   const equity = parsedValue - draft.loanPayoff;
 
   function handleContinue() {
-    updateDraft({ currentVehicleValueWorking: parsedValue, currentVehicleValueLow: low, currentVehicleValueHigh: high });
+    updateDraft({
+      currentVehicleValueWorking: parsedValue,
+      currentVehicleValueLow: low,
+      currentVehicleValueHigh: high,
+      // Seeds Screen 16's as-is value with the real trade-in estimate when
+      // we have one, rather than falling back to the (higher) retail figure.
+      ...(fetchedTradeValue !== null ? { currentVehicleTradeValue: fetchedTradeValue } : {}),
+    });
     navigation.navigate('ReplacementQuestion');
   }
 
@@ -40,14 +82,28 @@ export default function CurrentValueScreen({ navigation }: Props) {
       <Text style={styles.mileage}>{draft.currentMileage.toLocaleString()} miles</Text>
 
       <Text style={styles.sectionLabel}>Working Estimate of Current Value</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="$ 0"
-        keyboardType="decimal-pad"
-        value={workingValue}
-        onChangeText={setWorkingValue}
-      />
-      <Text style={styles.helperText}>You can adjust this -- a real market valuation is coming in a future update.</Text>
+      {fetchState === 'loading' ? (
+        <View style={styles.loadingRow}>
+          <ActivityIndicator size="small" />
+          <Text style={styles.loadingText}>Looking up a market value...</Text>
+        </View>
+      ) : (
+        <TextInput
+          style={styles.input}
+          placeholder="$ 0"
+          keyboardType="decimal-pad"
+          value={workingValue}
+          onChangeText={(text) => {
+            setWorkingValue(text);
+            setFetchedRange(null); // once hand-edited, stop treating this as the fetched figure
+          }}
+        />
+      )}
+      <Text style={styles.helperText}>
+        {fetchState === 'fetched'
+          ? 'Estimated from real market data -- you can adjust it.'
+          : "You can adjust this -- we couldn't fetch a market value automatically for this vehicle."}
+      </Text>
 
       {parsedValue > 0 && (
         <View style={styles.summaryCard}>
@@ -83,6 +139,8 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
   },
+  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
+  loadingText: { fontSize: 14, color: '#666' },
   helperText: { fontSize: 12, color: '#888', marginTop: 4 },
   summaryCard: {
     marginTop: 20,
