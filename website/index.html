@@ -119,16 +119,15 @@
   @media (max-width: 640px) { .nav-links { display: none; } }
 
   /* ---------- Hero ---------- */
-  .hero { padding: 76px 0 88px; position: relative; overflow: hidden; }
-  .hero::before {
-    content: "";
-    position: absolute; inset: 0;
+  .page-bg {
+    position: fixed; inset: 0; z-index: -1;
     background-image: var(--hero-photo);
     background-size: cover;
     background-position: center 22%;
+    background-attachment: fixed;
     opacity: 0.26;
-    z-index: 0;
   }
+  .hero { padding: 76px 0 88px; }
   .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
   @media (max-width: 900px) { .hero-grid { grid-template-columns: 1fr; gap: 44px; } }
   .hero h1 { font-size: clamp(2.5rem, 4.6vw, 3.6rem); line-height: 1.04; }
@@ -277,6 +276,7 @@
 </style>
 </head>
 <body>
+<div class="page-bg" aria-hidden="true"></div>
 
 <header>
   <nav class="nav">
