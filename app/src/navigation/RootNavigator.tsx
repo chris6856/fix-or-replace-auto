@@ -33,6 +33,9 @@ import QuestionsScreen from '../decision/QuestionsScreen';
 import SaveDecisionScreen from '../decision/SaveDecisionScreen';
 import { useDecisionDraft } from '../decision/DecisionDraftContext';
 import type { AnalysisResult } from '../decision/buildCalcInput';
+import SymptomCheckScreen from '../symptomCheck/SymptomCheckScreen';
+import SymptomResultScreen from '../symptomCheck/SymptomResultScreen';
+import type { PossibleIssue } from '@fixorreplace/types';
 
 export type AuthStackParamList = {
   Welcome: undefined;
@@ -54,6 +57,13 @@ export type AppStackParamList = {
   ConfirmVehicle: { decoded: DecodedVehicle };
   VehicleProfile: { draft: VehicleDraft };
   VehicleDetail: { vehicleId: string };
+  SymptomCheck: { vehicleId: string };
+  SymptomResult: {
+    vehicleId: string;
+    symptomDescription: string;
+    possibleIssues: PossibleIssue[];
+    urgentSafetyNote: string | null;
+  };
   MileageCheck: undefined;
   RepairEstimate: undefined;
   ConfirmRepair: undefined;
@@ -191,6 +201,16 @@ export default function RootNavigator() {
             options={{ title: 'Vehicle Profile' }}
           />
           <AppStack.Screen name="VehicleDetail" component={VehicleDetailScreen} options={{ title: 'Vehicle' }} />
+          <AppStack.Screen
+            name="SymptomCheck"
+            component={SymptomCheckScreen}
+            options={{ title: 'Check a Symptom' }}
+          />
+          <AppStack.Screen
+            name="SymptomResult"
+            component={SymptomResultScreen}
+            options={{ title: 'Possible Causes' }}
+          />
           <AppStack.Screen
             name="MileageCheck"
             component={MileageCheckScreen}

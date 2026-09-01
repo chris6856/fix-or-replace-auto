@@ -103,6 +103,25 @@ export interface ValuationCache {
   fetchedAt: string;
 }
 
+export type IssueLikelihood = 'low' | 'medium' | 'high';
+
+/** A candidate cause for a symptom -- never a diagnosis, always for a mechanic to confirm. */
+export interface PossibleIssue {
+  cause: string;
+  likelihood: IssueLikelihood;
+  isSafetyIssue: boolean;
+  explanation: string;
+}
+
+export interface SymptomCheck {
+  id: string;
+  vehicleId: string;
+  symptomDescription: string;
+  possibleIssues: PossibleIssue[];
+  urgentSafetyNote: string | null;
+  createdAt: string;
+}
+
 /** Adapter interface so the valuation vendor is swappable (see build plan step 10). */
 export interface VehicleValuationProvider {
   getValuation(input: {
