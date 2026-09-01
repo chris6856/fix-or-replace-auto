@@ -73,7 +73,7 @@ export type AppStackParamList = {
   WhatIf: { result: AnalysisResult };
   Why: { result: AnalysisResult };
   Questions: { result: AnalysisResult; explanation: string };
-  SaveDecision: { result: AnalysisResult; explanation: string };
+  SaveDecision: { result: AnalysisResult; explanation?: string };
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -84,9 +84,10 @@ const AppStack = createNativeStackNavigator<AppStackParamList>();
  * flow (Screens 9-28) so the user is never stuck having to tap back
  * through a dozen-plus screens to get out. Confirms first since it
  * discards everything typed so far -- nothing is persisted until Save.
+ * Always returns to the Garage (home) screen, never mid-flow.
  */
 function CancelDecisionButton() {
-  const { draft, clearDraft } = useDecisionDraft();
+  const { clearDraft } = useDecisionDraft();
 
   function handlePress() {
     Alert.alert('Cancel this decision?', 'Your progress on this repair-vs-replace decision will be lost.', [
@@ -95,9 +96,8 @@ function CancelDecisionButton() {
         text: 'Cancel Decision',
         style: 'destructive',
         onPress: () => {
-          const vehicleId = draft?.vehicleId;
           clearDraft();
-          rootNavigationRef?.navigate(vehicleId ? 'VehicleDetail' : 'Garage', vehicleId ? { vehicleId } : undefined);
+          rootNavigationRef?.navigate('Garage');
         },
       },
     ]);
@@ -110,13 +110,52 @@ function CancelDecisionButton() {
   );
 }
 
+/**
+ * Once the analysis has actually run (Screens 21-27, from the result
+ * onward), the user shouldn't have to click through Why/Questions just to
+ * save -- Save sits next to Cancel from here on, going to the same
+ * confirm-and-save screen the end-of-flow Save button already uses.
+ */
+function SaveAndCancelButtons({ result, explanation }: { result: AnalysisResult; explanation?: string }) {
+  return (
+    <View style={styles.headerActions}>
+      <Pressable
+        onPress={() => rootNavigationRef?.navigate('SaveDecision', { result, explanation })}
+        hitSlop={12}
+        style={styles.saveButton}
+      >
+        <Text style={styles.saveButtonText}>Save</Text>
+      </Pressable>
+      <CancelDecisionButton />
+    </View>
+  );
+}
+
 /** Set once NavigationContainer mounts -- see the ref wiring below. */
 let rootNavigationRef: {
-  navigate: (name: 'VehicleDetail' | 'Garage', params?: { vehicleId: string }) => void;
+  navigate: {
+    (name: 'Garage'): void;
+    (name: 'SaveDecision', params: { result: AnalysisResult; explanation?: string }): void;
+  };
 } | null = null;
 
 function decisionScreenOptions(title: string): NativeStackNavigationOptions {
   return { title, headerRight: () => <CancelDecisionButton /> };
+}
+
+/** Same as decisionScreenOptions, plus the Save shortcut described above. */
+function decisionScreenOptionsWithSave(
+  title: string,
+): (props: { route: { params?: { result?: AnalysisResult; explanation?: string } } }) => NativeStackNavigationOptions {
+  return ({ route }) => ({
+    title,
+    headerRight: () =>
+      route.params?.result ? (
+        <SaveAndCancelButtons result={route.params.result} explanation={route.params.explanation} />
+      ) : (
+        <CancelDecisionButton />
+      ),
+  });
 }
 
 export default function RootNavigator() {
@@ -211,33 +250,33 @@ export default function RootNavigator() {
           <AppStack.Screen
             name="Result"
             component={ResultScreen}
-            options={decisionScreenOptions('Fix or Replace?')}
+            options={decisionScreenOptionsWithSave('Fix or Replace?')}
           />
           <AppStack.Screen
             name="SideBySide"
             component={SideBySideScreen}
-            options={decisionScreenOptions('Your Two Options')}
+            options={decisionScreenOptionsWithSave('Your Two Options')}
           />
           <AppStack.Screen
             name="Outlook"
             component={OutlookScreen}
-            options={decisionScreenOptions('Next 24 Months')}
+            options={decisionScreenOptionsWithSave('Next 24 Months')}
           />
           <AppStack.Screen
             name="Threshold"
             component={ThresholdScreen}
-            options={decisionScreenOptions('Repair Threshold')}
+            options={decisionScreenOptionsWithSave('Repair Threshold')}
           />
           <AppStack.Screen
             name="WhatIf"
             component={WhatIfScreen}
-            options={decisionScreenOptions('Change the Numbers')}
+            options={decisionScreenOptionsWithSave('Change the Numbers')}
           />
-          <AppStack.Screen name="Why" component={WhyScreen} options={decisionScreenOptions('Why?')} />
+          <AppStack.Screen name="Why" component={WhyScreen} options={decisionScreenOptionsWithSave('Why?')} />
           <AppStack.Screen
             name="Questions"
             component={QuestionsScreen}
-            options={decisionScreenOptions('Before You Say Yes')}
+            options={decisionScreenOptionsWithSave('Before You Say Yes')}
           />
           <AppStack.Screen
             name="SaveDecision"
@@ -256,6 +295,9 @@ export default function RootNavigator() {
 }
 
 const styles = StyleSheet.create({
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   cancelButton: { paddingHorizontal: 4, paddingVertical: 4 },
   cancelButtonText: { fontSize: 15, color: '#c62828', fontWeight: '600' },
+  saveButton: { paddingHorizontal: 4, paddingVertical: 4 },
+  saveButtonText: { fontSize: 15, color: '#111', fontWeight: '700' },
 });

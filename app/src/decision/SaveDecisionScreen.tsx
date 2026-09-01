@@ -29,9 +29,8 @@ export default function SaveDecisionScreen({ route, navigation }: Props) {
     try {
       await saveDecision(draft!, input, output, explanation || null);
       queryClient.invalidateQueries({ queryKey: ['decisions', draft!.vehicleId] });
-      const vehicleId = draft!.vehicleId;
       clearDraft();
-      navigation.navigate('VehicleDetail', { vehicleId });
+      navigation.navigate('Garage');
     } catch (err) {
       setIsSaving(false);
       setError(err instanceof Error ? err.message : 'Could not save this decision.');
