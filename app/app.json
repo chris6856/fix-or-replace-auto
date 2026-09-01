@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "app",
-    "slug": "app",
+    "name": "Fix or Replace Auto",
+    "slug": "fix-or-replace-auto",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,6 +12,7 @@
     },
     "android": {
       "package": "com.fixorreplaceauto.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#0A0F2E",
         "foregroundImage": "./assets/android-icon-foreground.png"
