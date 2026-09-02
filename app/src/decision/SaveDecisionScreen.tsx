@@ -8,6 +8,7 @@ import { useVehicle } from '../garage/useVehicles';
 import RecommendationBadge from './RecommendationBadge';
 import { formatCurrency } from './explainResult';
 import { saveDecision } from './saveDecision';
+import { emailReport } from './emailReport';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'SaveDecision'>;
 
@@ -15,29 +16,88 @@ export default function SaveDecisionScreen({ route, navigation }: Props) {
   const { result, explanation } = route.params;
   const { input, output } = result;
   const { draft, clearDraft } = useDecisionDraft();
-  const { data: vehicle } = useVehicle(draft?.vehicleId ?? '');
+  // Captured once, before clearDraft() wipes the context on save --
+  // still needed to look up the vehicle for the post-save screen.
+  const [vehicleId] = useState(() => draft?.vehicleId ?? null);
+  const { data: vehicle } = useVehicle(vehicleId ?? '');
   const queryClient = useQueryClient();
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savedDecisionId, setSavedDecisionId] = useState<string | null>(null);
+  const [isEmailing, setIsEmailing] = useState(false);
+  const [emailSentTo, setEmailSentTo] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
-  if (!draft) return null;
+  if (!draft && !savedDecisionId) return null;
 
   async function handleSave() {
+    if (!draft) return;
     setIsSaving(true);
     setError(null);
     try {
-      await saveDecision(draft!, input, output, explanation || null);
-      queryClient.invalidateQueries({ queryKey: ['decisions', draft!.vehicleId] });
+      const { decisionId } = await saveDecision(draft, input, output, explanation || null);
+      queryClient.invalidateQueries({ queryKey: ['decisions', draft.vehicleId] });
       clearDraft();
-      // Clears the whole repair-vs-replace stack rather than just
-      // navigating -- Garage is the home screen and must never show a
-      // back arrow once you're back on it.
-      navigation.reset({ index: 0, routes: [{ name: 'Garage' }] });
+      setSavedDecisionId(decisionId);
     } catch (err) {
-      setIsSaving(false);
       setError(err instanceof Error ? err.message : 'Could not save this decision.');
+    } finally {
+      setIsSaving(false);
     }
+  }
+
+  async function handleEmailReport() {
+    if (!savedDecisionId) return;
+    setIsEmailing(true);
+    setEmailError(null);
+    try {
+      const { sentTo } = await emailReport(savedDecisionId);
+      setEmailSentTo(sentTo);
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : 'Could not email this report right now.');
+    } finally {
+      setIsEmailing(false);
+    }
+  }
+
+  function handleDone() {
+    // Clears the whole repair-vs-replace stack rather than just
+    // navigating -- Garage is the home screen and must never show a
+    // back arrow once you're back on it.
+    navigation.reset({ index: 0, routes: [{ name: 'Garage' }] });
+  }
+
+  if (savedDecisionId) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>DECISION SAVED</Text>
+
+        <View style={styles.card}>
+          <Text style={styles.vehicleName}>
+            {vehicle?.nickname ?? (vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : '')}
+          </Text>
+          <RecommendationBadge recommendation={output.recommendation} />
+        </View>
+
+        {emailSentTo ? (
+          <Text style={styles.emailSentText}>Report sent to {emailSentTo}.</Text>
+        ) : (
+          <Pressable style={styles.secondaryButton} onPress={handleEmailReport} disabled={isEmailing}>
+            {isEmailing ? (
+              <ActivityIndicator />
+            ) : (
+              <Text style={styles.secondaryButtonText}>EMAIL ME A PDF REPORT</Text>
+            )}
+          </Pressable>
+        )}
+        {emailError && <Text style={styles.error}>{emailError}</Text>}
+
+        <Pressable style={[styles.primaryButton, styles.doneButton]} onPress={handleDone}>
+          <Text style={styles.primaryButtonText}>DONE</Text>
+        </Pressable>
+      </View>
+    );
   }
 
   return (
@@ -48,7 +108,7 @@ export default function SaveDecisionScreen({ route, navigation }: Props) {
         <Text style={styles.vehicleName}>
           {vehicle?.nickname ?? (vehicle ? `${vehicle.year} ${vehicle.make} ${vehicle.model}` : '')}
         </Text>
-        <Text style={styles.repairCategory}>{draft.repairCategory ?? 'General Repair'}</Text>
+        <Text style={styles.repairCategory}>{draft?.repairCategory ?? 'General Repair'}</Text>
         <Text style={styles.repairCost}>{formatCurrency(input.keep.currentRepairCost)}</Text>
         <RecommendationBadge recommendation={output.recommendation} />
       </View>
@@ -75,6 +135,17 @@ const styles = StyleSheet.create({
   repairCategory: { fontSize: 15, color: '#555', marginTop: 8 },
   repairCost: { fontSize: 24, fontWeight: '800', marginTop: 4 },
   error: { color: '#c62828', textAlign: 'center', marginTop: 16 },
+  emailSentText: { color: '#2e7d32', textAlign: 'center', marginTop: 28, fontSize: 14, fontWeight: '600' },
+  secondaryButton: {
+    marginTop: 28,
+    height: 48,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#111',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryButtonText: { color: '#111', fontSize: 14, fontWeight: '700' },
   primaryButton: {
     marginTop: 28,
     height: 48,
@@ -83,5 +154,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  doneButton: { marginTop: 12 },
   primaryButtonText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 });

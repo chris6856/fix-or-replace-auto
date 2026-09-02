@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
@@ -7,6 +8,7 @@ import { useDecisionDraft } from '../decision/DecisionDraftContext';
 import { useDecisionHistory, type DecisionHistoryItem } from '../decision/decisionHistory';
 import { recommendationLabel } from '../decision/RecommendationBadge';
 import { formatCurrency } from '../decision/explainResult';
+import { emailReport } from '../decision/emailReport';
 import { useSymptomChecks, type SymptomCheckItem } from '../symptomCheck/symptomCheckHistory';
 import { supabase } from '../lib/supabase';
 
@@ -130,19 +132,41 @@ function DecisionRow({ item, onDelete }: { item: DecisionHistoryItem; onDelete: 
     month: 'short',
     day: 'numeric',
   });
+  const [isEmailing, setIsEmailing] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<string | null>(null);
+
+  async function handleEmail() {
+    setIsEmailing(true);
+    setEmailStatus(null);
+    try {
+      const { sentTo } = await emailReport(item.id);
+      setEmailStatus(`Sent to ${sentTo}`);
+    } catch (err) {
+      setEmailStatus(err instanceof Error ? err.message : 'Could not email this report.');
+    } finally {
+      setIsEmailing(false);
+    }
+  }
+
   return (
     <View style={styles.decisionRow}>
       <View style={styles.decisionRowHeader}>
         <Text style={styles.decisionDate}>{date}</Text>
-        <Pressable onPress={() => onDelete(item.id)} hitSlop={10}>
-          <Text style={styles.deleteText}>Delete</Text>
-        </Pressable>
+        <View style={styles.decisionRowActions}>
+          <Pressable onPress={handleEmail} disabled={isEmailing} hitSlop={10}>
+            {isEmailing ? <ActivityIndicator size="small" /> : <Text style={styles.emailText}>Email</Text>}
+          </Pressable>
+          <Pressable onPress={() => onDelete(item.id)} hitSlop={10}>
+            <Text style={styles.deleteText}>Delete</Text>
+          </Pressable>
+        </View>
       </View>
       <Text style={styles.decisionCategory}>{item.category}</Text>
       <View style={styles.decisionFooter}>
         <Text style={styles.decisionCost}>{formatCurrency(item.cost)}</Text>
         <Text style={styles.decisionRecommendation}>{recommendationLabel(item.recommendation)}</Text>
       </View>
+      {emailStatus && <Text style={styles.emailStatusText}>{emailStatus}</Text>}
     </View>
   );
 }
@@ -209,7 +233,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   decisionRowHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  decisionRowActions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   decisionDate: { fontSize: 12, color: '#999' },
+  emailText: { fontSize: 13, color: '#111', fontWeight: '600' },
+  emailStatusText: { fontSize: 12, color: '#2e7d32', marginTop: 6 },
   deleteText: { fontSize: 13, color: '#c62828', fontWeight: '600' },
   decisionCategory: { fontSize: 15, fontWeight: '700', marginTop: 2 },
   decisionFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },

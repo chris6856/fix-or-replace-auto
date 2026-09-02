@@ -12,7 +12,7 @@ export async function saveDecision(
   input: CalcInput,
   output: CalcOutput,
   aiExplanation: string | null,
-): Promise<void> {
+): Promise<{ decisionId: string }> {
   const { data: repairEvent, error: repairError } = await supabase
     .from('repair_events')
     .insert({
@@ -28,14 +28,20 @@ export async function saveDecision(
 
   if (repairError) throw repairError;
 
-  const { error: decisionError } = await supabase.from('decisions').insert({
-    vehicle_id: draft.vehicleId,
-    repair_event_id: repairEvent.id,
-    recommendation: output.recommendation,
-    calc_input: input,
-    calc_output: output,
-    ai_explanation: aiExplanation,
-  });
+  const { data: decision, error: decisionError } = await supabase
+    .from('decisions')
+    .insert({
+      vehicle_id: draft.vehicleId,
+      repair_event_id: repairEvent.id,
+      recommendation: output.recommendation,
+      calc_input: input,
+      calc_output: output,
+      ai_explanation: aiExplanation,
+    })
+    .select('id')
+    .single();
 
   if (decisionError) throw decisionError;
+
+  return { decisionId: decision.id };
 }
