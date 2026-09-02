@@ -1,20 +1,29 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useDecisionDraft } from './DecisionDraftContext';
 import { extractRepairDetails } from './aiExtractRepair';
+import { useSymptomChecks, type SymptomCheckItem } from '../symptomCheck/symptomCheckHistory';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'RepairEstimate'>;
 
 export default function RepairEstimateScreen({ navigation }: Props) {
   const { draft, updateDraft } = useDecisionDraft();
+  const { data: symptomChecks } = useSymptomChecks(draft?.vehicleId ?? '');
   const [estimate, setEstimate] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!draft) return null;
+
+  function handleImportSymptomCheck(check: SymptomCheckItem) {
+    const causes = check.possibleIssues.map((issue) => issue.cause).join(', ');
+    setDescription(
+      `${check.symptomDescription}${causes ? `\n\nPossible causes noted at the time: ${causes}.` : ''}`,
+    );
+  }
 
   async function handleContinue() {
     const parsedEstimate = Number(estimate);
@@ -47,8 +56,32 @@ export default function RepairEstimateScreen({ navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>WHAT DID THE SHOP TELL YOU?</Text>
+
+      {symptomChecks && symptomChecks.length > 0 && (
+        <View style={styles.importSection}>
+          <Text style={styles.sectionLabel}>Import a Saved Symptom Check</Text>
+          {symptomChecks.map((check) => (
+            <Pressable
+              key={check.id}
+              style={styles.importRow}
+              onPress={() => handleImportSymptomCheck(check)}
+            >
+              <Text style={styles.importRowText} numberOfLines={2}>
+                {check.symptomDescription}
+              </Text>
+              <Text style={styles.importRowDate}>
+                {new Date(check.createdAt).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
 
       <Text style={styles.sectionLabel}>Total Repair Estimate</Text>
       <TextInput
@@ -74,14 +107,25 @@ export default function RepairEstimateScreen({ navigation }: Props) {
       <Pressable style={styles.primaryButton} onPress={handleContinue} disabled={isSubmitting}>
         {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>CONTINUE</Text>}
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#fff' },
+  content: { padding: 20, paddingBottom: 40 },
   title: { fontSize: 20, fontWeight: '800', marginBottom: 20 },
   sectionLabel: { fontSize: 13, fontWeight: '700', color: '#666', marginTop: 12, marginBottom: 8 },
+  importSection: { marginBottom: 8 },
+  importRow: {
+    borderWidth: 1,
+    borderColor: '#e2e2e2',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+  },
+  importRowText: { fontSize: 14, color: '#333' },
+  importRowDate: { fontSize: 12, color: '#999', marginTop: 4 },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
