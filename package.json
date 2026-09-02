@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "build:packages": "npm run build --workspace=packages/types && npm run build --workspace=packages/calc-engine",
-    "test:calc-engine": "npm run test --workspace=packages/calc-engine"
+    "test:calc-engine": "npm run test --workspace=packages/calc-engine",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "@types/react": "~19.2.2"

@@ -23,6 +23,7 @@ import ReplacementCostsScreen from '../decision/ReplacementCostsScreen';
 import TradeInScreen from '../decision/TradeInScreen';
 import FinancingScreen from '../decision/FinancingScreen';
 import AnalysisScreen from '../decision/AnalysisScreen';
+import PaywallScreen from '../decision/PaywallScreen';
 import ResultScreen from '../decision/ResultScreen';
 import SideBySideScreen from '../decision/SideBySideScreen';
 import OutlookScreen from '../decision/OutlookScreen';
@@ -50,6 +51,12 @@ export type VehicleDraft = {
   trim: string | null;
 };
 
+/** 'free' = the user's first-ever decision (no paywall). 'decision' =
+ *  paid $0.99, sees only the Result screen. 'full' = paid $1.99, sees
+ *  everything (breakdown, outlook, threshold, why, questions, save,
+ *  email). See PaywallScreen. */
+export type UnlockedTier = 'free' | 'decision' | 'full';
+
 export type AppStackParamList = {
   Garage: undefined;
   AddVehicle: { prefill?: VehicleDraft } | undefined;
@@ -76,7 +83,8 @@ export type AppStackParamList = {
   TradeIn: undefined;
   Financing: undefined;
   Analysis: undefined;
-  Result: { result: AnalysisResult };
+  Paywall: { result: AnalysisResult; upgradeOnly?: boolean };
+  Result: { result: AnalysisResult; unlockedTier?: UnlockedTier };
   SideBySide: { result: AnalysisResult };
   Outlook: { result: AnalysisResult };
   Threshold: { result: AnalysisResult };
@@ -168,14 +176,20 @@ function decisionScreenOptions(title: string): NativeStackNavigationOptions {
   return { title, headerRight: () => <CancelDecisionButton /> };
 }
 
-/** Same as decisionScreenOptions, plus the Save shortcut described above. */
+/**
+ * Same as decisionScreenOptions, plus the Save shortcut described above --
+ * except on the $0.99 "just the decision" tier, which never gets a Save
+ * (or the deeper screens it would lead to at all).
+ */
 function decisionScreenOptionsWithSave(
   title: string,
-): (props: { route: { params?: { result?: AnalysisResult; explanation?: string } } }) => NativeStackNavigationOptions {
+): (props: {
+  route: { params?: { result?: AnalysisResult; explanation?: string; unlockedTier?: UnlockedTier } };
+}) => NativeStackNavigationOptions {
   return ({ route }) => ({
     title,
     headerRight: () =>
-      route.params?.result ? (
+      route.params?.result && route.params.unlockedTier !== 'decision' ? (
         <SaveAndCancelButtons result={route.params.result} explanation={route.params.explanation} />
       ) : (
         <CancelDecisionButton />
@@ -286,6 +300,11 @@ export default function RootNavigator() {
             options={decisionScreenOptions('Financing')}
           />
           <AppStack.Screen name="Analysis" component={AnalysisScreen} options={{ title: '', headerShown: false }} />
+          <AppStack.Screen
+            name="Paywall"
+            component={PaywallScreen}
+            options={decisionScreenOptions('Your Analysis Is Ready')}
+          />
           <AppStack.Screen
             name="Result"
             component={ResultScreen}

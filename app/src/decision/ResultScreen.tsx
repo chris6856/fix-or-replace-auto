@@ -5,14 +5,19 @@ import { useVehicle } from '../garage/useVehicles';
 import { useDecisionDraft } from './DecisionDraftContext';
 import RecommendationBadge from './RecommendationBadge';
 import { explainResult, formatCurrency } from './explainResult';
+import { PRODUCT_PRICES } from '../purchases/iap';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Result'>;
 
 export default function ResultScreen({ route, navigation }: Props) {
-  const { result } = route.params;
+  const { result, unlockedTier } = route.params;
   const { input, output } = result;
   const { draft } = useDecisionDraft();
   const { data: vehicle } = useVehicle(draft?.vehicleId ?? '');
+  // 'decision' ($0.99) is view-once, nothing deeper; 'free' and 'full' get
+  // everything. Treat a missing tier (shouldn't normally happen) as full
+  // access rather than silently blocking someone who already paid.
+  const hasFullAccess = unlockedTier !== 'decision';
 
   return (
     <View style={styles.container}>
@@ -40,9 +45,18 @@ export default function ResultScreen({ route, navigation }: Props) {
 
       <Text style={styles.explanation}>{explainResult(input, output)}</Text>
 
-      <Pressable style={styles.primaryButton} onPress={() => navigation.navigate('SideBySide', { result })}>
-        <Text style={styles.primaryButtonText}>SEE THE FULL BREAKDOWN</Text>
-      </Pressable>
+      {hasFullAccess ? (
+        <Pressable style={styles.primaryButton} onPress={() => navigation.navigate('SideBySide', { result })}>
+          <Text style={styles.primaryButtonText}>SEE THE FULL BREAKDOWN</Text>
+        </Pressable>
+      ) : (
+        <Pressable
+          style={styles.primaryButton}
+          onPress={() => navigation.navigate('Paywall', { result, upgradeOnly: true })}
+        >
+          <Text style={styles.primaryButtonText}>UNLOCK FULL REPORT -- {PRODUCT_PRICES.unlock_full_report}</Text>
+        </Pressable>
+      )}
     </View>
   );
 }

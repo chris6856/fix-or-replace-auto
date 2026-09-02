@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useDecisionDraft } from './DecisionDraftContext';
 import { buildCalcInput } from './buildCalcInput';
+import { hasUsedFreeDecision } from './freeDecisionCheck';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Analysis'>;
 
@@ -34,14 +35,27 @@ export default function AnalysisScreen({ navigation }: Props) {
 
     const input = buildCalcInput(draft);
     const output = computeDecision(input);
+    let cancelled = false;
 
-    const timeout = setTimeout(() => {
-      navigation.replace('Result', { result: { input, output } });
-    }, 1100);
+    // A user's very first decision, ever, is free -- everything after
+    // that goes through the paywall (see PaywallScreen). Run that check
+    // alongside the checklist animation delay rather than after it, so
+    // the wait doesn't get longer for paying users.
+    Promise.all([
+      hasUsedFreeDecision().catch(() => true), // fail toward the paywall, not toward giving away free decisions
+      new Promise((resolve) => setTimeout(resolve, 1100)),
+    ]).then(([usedFreeDecision]) => {
+      if (cancelled) return;
+      if (usedFreeDecision) {
+        navigation.replace('Paywall', { result: { input, output } });
+      } else {
+        navigation.replace('Result', { result: { input, output }, unlockedTier: 'free' });
+      }
+    });
 
     return () => {
+      cancelled = true;
       clearInterval(interval);
-      clearTimeout(timeout);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
