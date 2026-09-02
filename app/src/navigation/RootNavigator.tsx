@@ -90,6 +90,21 @@ const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
 
 /**
+ * Header action on the Garage (home) screen -- was a plain text link at
+ * the very bottom of the screen, easy to miss below a long vehicle list.
+ * A sign-out has no undo-able state to lose, so unlike Cancel this skips
+ * a confirmation.
+ */
+function SignOutButton() {
+  const { signOut } = useAuth();
+  return (
+    <Pressable onPress={signOut} hitSlop={12} style={styles.cancelButton}>
+      <Text style={styles.signOutButtonText}>Sign Out</Text>
+    </Pressable>
+  );
+}
+
+/**
  * Shown in the header of every screen in the repair-vs-replace decision
  * flow (Screens 9-28) so the user is never stuck having to tap back
  * through a dozen-plus screens to get out. Confirms first since it
@@ -187,7 +202,11 @@ export default function RootNavigator() {
     >
       {session ? (
         <AppStack.Navigator>
-          <AppStack.Screen name="Garage" component={GarageScreen} options={{ title: 'My Garage' }} />
+          <AppStack.Screen
+            name="Garage"
+            component={GarageScreen}
+            options={{ title: 'Fix or Replace Auto', headerRight: () => <SignOutButton /> }}
+          />
           <AppStack.Screen name="AddVehicle" component={AddVehicleScreen} options={{ title: 'Add a Vehicle' }} />
           <AppStack.Screen name="ScanVin" component={ScanVinScreen} options={{ title: 'Scan VIN' }} />
           <AppStack.Screen
@@ -320,4 +339,5 @@ const styles = StyleSheet.create({
   cancelButtonText: { fontSize: 15, color: '#c62828', fontWeight: '600' },
   saveButton: { paddingHorizontal: 4, paddingVertical: 4 },
   saveButtonText: { fontSize: 15, color: '#111', fontWeight: '700' },
+  signOutButtonText: { fontSize: 14, color: '#666', fontWeight: '600' },
 });
