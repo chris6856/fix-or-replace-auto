@@ -30,7 +30,10 @@ export default function SaveDecisionScreen({ route, navigation }: Props) {
       await saveDecision(draft!, input, output, explanation || null);
       queryClient.invalidateQueries({ queryKey: ['decisions', draft!.vehicleId] });
       clearDraft();
-      navigation.navigate('Garage');
+      // Clears the whole repair-vs-replace stack rather than just
+      // navigating -- Garage is the home screen and must never show a
+      // back arrow once you're back on it.
+      navigation.reset({ index: 0, routes: [{ name: 'Garage' }] });
     } catch (err) {
       setIsSaving(false);
       setError(err instanceof Error ? err.message : 'Could not save this decision.');

@@ -122,7 +122,9 @@ function CancelDecisionButton() {
         style: 'destructive',
         onPress: () => {
           clearDraft();
-          rootNavigationRef?.navigate('Garage');
+          // Clears the whole decision-flow stack -- Garage is the home
+          // screen and must never show a back arrow once you're on it.
+          rootNavigationRef?.reset({ index: 0, routes: [{ name: 'Garage' }] });
         },
       },
     ]);
@@ -158,10 +160,8 @@ function SaveAndCancelButtons({ result, explanation }: { result: AnalysisResult;
 
 /** Set once NavigationContainer mounts -- see the ref wiring below. */
 let rootNavigationRef: {
-  navigate: {
-    (name: 'Garage'): void;
-    (name: 'SaveDecision', params: { result: AnalysisResult; explanation?: string }): void;
-  };
+  navigate: (name: 'SaveDecision', params: { result: AnalysisResult; explanation?: string }) => void;
+  reset: (state: { index: number; routes: { name: 'Garage' }[] }) => void;
 } | null = null;
 
 function decisionScreenOptions(title: string): NativeStackNavigationOptions {
