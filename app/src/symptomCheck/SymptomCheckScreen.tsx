@@ -79,6 +79,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: '800', marginBottom: 8 },
   subtitle: { fontSize: 14, color: '#666', lineHeight: 20, marginBottom: 20 },
   input: {
+    color: '#111',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,

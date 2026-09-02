@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: '800', marginBottom: 20 },
   sectionLabel: { fontSize: 13, fontWeight: '700', color: '#666', marginTop: 16, marginBottom: 8 },
   input: {
+    color: '#111',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,

@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
   mileage: { fontSize: 36, fontWeight: '800', textAlign: 'center', marginBottom: 32 },
   question: { fontSize: 16, textAlign: 'center', marginBottom: 20 },
   input: {
+    color: '#111',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,

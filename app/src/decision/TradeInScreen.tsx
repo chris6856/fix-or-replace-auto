@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: '#666', marginBottom: 16 },
   sectionLabel: { fontSize: 13, fontWeight: '700', color: '#666', marginTop: 12, marginBottom: 8 },
   input: {
+    color: '#111',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,

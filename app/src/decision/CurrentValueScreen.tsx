@@ -135,6 +135,7 @@ const styles = StyleSheet.create({
   mileage: { fontSize: 15, color: '#555', marginBottom: 20 },
   sectionLabel: { fontSize: 13, fontWeight: '700', color: '#666', marginBottom: 8 },
   input: {
+    color: '#111',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,

@@ -112,6 +112,7 @@ const styles = StyleSheet.create({
   versus: { fontSize: 12, color: '#999', marginHorizontal: 8 },
   fieldLabel: { fontSize: 13, fontWeight: '700', color: '#666', marginTop: 12, marginBottom: 8 },
   input: {
+    color: '#111',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,

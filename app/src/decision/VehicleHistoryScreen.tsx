@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
   optionChipText: { fontSize: 13, color: '#333' },
   optionChipTextSelected: { color: '#fff', fontWeight: '700' },
   input: {
+    color: '#111',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,

@@ -127,6 +127,7 @@ const styles = StyleSheet.create({
   importRowText: { fontSize: 14, color: '#333' },
   importRowDate: { fontSize: 12, color: '#999', marginTop: 4 },
   input: {
+    color: '#111',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
