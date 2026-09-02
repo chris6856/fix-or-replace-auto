@@ -79,7 +79,7 @@ function VehicleCard({
         </View>
       </Pressable>
       <Pressable style={styles.symptomButton} onPress={onCheckSymptom}>
-        <Text style={styles.symptomButtonText}>CHECK A SYMPTOM</Text>
+        <Text style={styles.symptomButtonText}>SOMETHING'S GOING ON WITH THE CAR</Text>
       </Pressable>
     </View>
   );

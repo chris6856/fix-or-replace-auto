@@ -96,7 +96,7 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
       </Pressable>
 
       <Pressable style={styles.secondaryButton} onPress={handleCheckSymptom}>
-        <Text style={styles.secondaryButtonText}>SOMETHING SEEMS OFF? CHECK A SYMPTOM</Text>
+        <Text style={styles.secondaryButtonText}>SOMETHING'S GOING ON WITH THE CAR</Text>
       </Pressable>
 
       <Text style={styles.sectionLabel}>Previous Decisions</Text>

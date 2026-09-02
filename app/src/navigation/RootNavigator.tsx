@@ -223,7 +223,7 @@ export default function RootNavigator() {
           <AppStack.Screen
             name="SymptomCheck"
             component={SymptomCheckScreen}
-            options={{ title: 'Check a Symptom' }}
+            options={{ title: "Something's Going On" }}
           />
           <AppStack.Screen
             name="SymptomResult"
