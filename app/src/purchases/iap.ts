@@ -44,7 +44,7 @@ export async function purchaseProduct(productId: ProductId): Promise<PurchaseRes
   try {
     await initConnection();
 
-    const purchase = await new Promise<{ productId: string; purchaseToken?: string }>((resolve, reject) => {
+    const purchase = await new Promise<{ productId: string; purchaseToken?: string | null }>((resolve, reject) => {
       const updateSub = purchaseUpdatedListener((event) => {
         if (event.productId !== productId) return;
         updateSub.remove();
@@ -57,7 +57,10 @@ export async function purchaseProduct(productId: ProductId): Promise<PurchaseRes
         reject(purchaseError);
       });
 
-      requestPurchase({ skus: [productId] }).catch((err: unknown) => {
+      requestPurchase({
+        request: { google: { skus: [productId] } },
+        type: 'in-app',
+      }).catch((err: unknown) => {
         updateSub.remove();
         errorSub.remove();
         reject(err);

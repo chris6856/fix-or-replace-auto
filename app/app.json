@@ -41,12 +41,6 @@
         {
           "photosPermission": "Fix or Replace Auto uses your photo library to add a picture of your vehicle."
         }
-      ],
-      [
-        "react-native-iap",
-        {
-          "paymentProvider": "Play Store"
-        }
       ]
     ]
   }
