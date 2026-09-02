@@ -19,6 +19,7 @@ interface VehicleRow {
   current_loan_payoff: number;
   condition: VehicleCondition | null;
   reliability_bucket: ReliabilityBucket | null;
+  photo_url: string | null;
   created_at: string;
 }
 
@@ -44,6 +45,7 @@ function rowToVehicle(row: VehicleRow): Vehicle {
     // intake flow (Screen 12). These are placeholder defaults until then.
     condition: row.condition ?? 'good',
     reliabilityBucket: row.reliability_bucket ?? 'reliable',
+    photoUrl: row.photo_url,
     createdAt: row.created_at,
   };
 }
@@ -105,6 +107,18 @@ export async function updateVehicleMileage(id: string, currentMileage: number): 
   const { data, error } = await supabase
     .from('vehicles')
     .update({ current_mileage: currentMileage })
+    .eq('id', id)
+    .select('*')
+    .single();
+
+  if (error) throw error;
+  return rowToVehicle(data as VehicleRow);
+}
+
+export async function updateVehiclePhoto(id: string, photoUrl: string): Promise<Vehicle> {
+  const { data, error } = await supabase
+    .from('vehicles')
+    .update({ photo_url: photoUrl })
     .eq('id', id)
     .select('*')
     .single();

@@ -35,6 +35,12 @@
         {
           "cameraPermission": "Fix or Replace Auto uses your camera to scan a vehicle's VIN barcode."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Fix or Replace Auto uses your photo library to add a picture of your vehicle."
+        }
       ]
     ]
   }

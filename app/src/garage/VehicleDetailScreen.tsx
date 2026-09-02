@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
 import type { AppStackParamList } from '../navigation/RootNavigator';
-import { useVehicle } from './useVehicles';
+import { useUpdateVehiclePhoto, useVehicle } from './useVehicles';
 import { useDecisionDraft } from '../decision/DecisionDraftContext';
 import { useDecisionHistory, type DecisionHistoryItem } from '../decision/decisionHistory';
 import { recommendationLabel } from '../decision/RecommendationBadge';
@@ -11,6 +11,8 @@ import { formatCurrency } from '../decision/explainResult';
 import { emailReport } from '../decision/emailReport';
 import { useSymptomChecks, type SymptomCheckItem } from '../symptomCheck/symptomCheckHistory';
 import { supabase } from '../lib/supabase';
+import { pickAndUploadVehiclePhoto } from './vehiclePhoto';
+import VehiclePhotoCircle from './VehiclePhotoCircle';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'VehicleDetail'>;
 
@@ -21,6 +23,24 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
   const { data: symptomChecks } = useSymptomChecks(vehicleId);
   const { startDraft } = useDecisionDraft();
   const queryClient = useQueryClient();
+  const updateVehiclePhoto = useUpdateVehiclePhoto();
+  const [isPickingPhoto, setIsPickingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  async function handleChangePhoto() {
+    setPhotoError(null);
+    setIsPickingPhoto(true);
+    try {
+      const photoUrl = await pickAndUploadVehiclePhoto(vehicleId);
+      if (photoUrl) {
+        await updateVehiclePhoto.mutateAsync({ id: vehicleId, photoUrl });
+      }
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : 'Could not update the photo.');
+    } finally {
+      setIsPickingPhoto(false);
+    }
+  }
 
   function handleDeleteDecision(decisionId: string) {
     Alert.alert('Delete this estimate?', 'This will permanently remove this saved decision.', [
@@ -86,12 +106,26 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{vehicle.nickname ?? `${vehicle.year} ${vehicle.make} ${vehicle.model}`}</Text>
-      <Text style={styles.subtitle}>
-        {vehicle.year} {vehicle.make} {vehicle.model}
-        {vehicle.trim ? ` ${vehicle.trim}` : ''}
-      </Text>
-      <Text style={styles.mileage}>{vehicle.currentMileage.toLocaleString()} miles</Text>
+      <View style={styles.headerRow}>
+        <View style={styles.headerText}>
+          <Text style={styles.title}>{vehicle.nickname ?? `${vehicle.year} ${vehicle.make} ${vehicle.model}`}</Text>
+          <Text style={styles.subtitle}>
+            {vehicle.year} {vehicle.make} {vehicle.model}
+            {vehicle.trim ? ` ${vehicle.trim}` : ''}
+          </Text>
+          <Text style={styles.mileage}>{vehicle.currentMileage.toLocaleString()} miles</Text>
+        </View>
+        <Pressable onPress={handleChangePhoto} disabled={isPickingPhoto}>
+          {isPickingPhoto ? (
+            <View style={[styles.photoLoading, { width: 64, height: 64, borderRadius: 32 }]}>
+              <ActivityIndicator />
+            </View>
+          ) : (
+            <VehiclePhotoCircle vehicle={vehicle} size={64} />
+          )}
+        </Pressable>
+      </View>
+      {photoError && <Text style={styles.error}>{photoError}</Text>}
 
       <Pressable style={styles.primaryButton} onPress={handleStartRepairIntake}>
         <Text style={styles.primaryButtonText}>I HAVE A REPAIR ESTIMATE</Text>
@@ -202,9 +236,13 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 40 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   errorText: { color: '#c62828' },
+  error: { color: '#c62828', marginBottom: 12 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 },
+  headerText: { flex: 1, marginRight: 16 },
+  photoLoading: { backgroundColor: '#e2e2e2', alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 22, fontWeight: '800' },
   subtitle: { fontSize: 15, color: '#555', marginTop: 4 },
-  mileage: { fontSize: 15, color: '#555', marginTop: 2, marginBottom: 24 },
+  mileage: { fontSize: 15, color: '#555', marginTop: 2 },
   primaryButton: {
     height: 56,
     borderRadius: 8,

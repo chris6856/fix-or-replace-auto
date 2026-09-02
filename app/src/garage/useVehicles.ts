@@ -5,6 +5,7 @@ import {
   fetchVehicles,
   updateVehicleFinancials,
   updateVehicleMileage,
+  updateVehiclePhoto,
   type NewVehicleInput,
 } from './api';
 import type { ReliabilityBucket, VehicleCondition } from '@fixorreplace/types';
@@ -30,6 +31,17 @@ export function useUpdateVehicleMileage() {
   return useMutation({
     mutationFn: ({ id, currentMileage }: { id: string; currentMileage: number }) =>
       updateVehicleMileage(id, currentMileage),
+    onSuccess: (vehicle) => {
+      queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+      queryClient.invalidateQueries({ queryKey: ['vehicles', vehicle.id] });
+    },
+  });
+}
+
+export function useUpdateVehiclePhoto() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, photoUrl }: { id: string; photoUrl: string }) => updateVehiclePhoto(id, photoUrl),
     onSuccess: (vehicle) => {
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
       queryClient.invalidateQueries({ queryKey: ['vehicles', vehicle.id] });

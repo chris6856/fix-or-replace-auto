@@ -23,6 +23,7 @@ export interface Vehicle {
   currentLoanPayoff: number;
   condition: VehicleCondition;
   reliabilityBucket: ReliabilityBucket;
+  photoUrl: string | null;
   createdAt: string;
 }
 

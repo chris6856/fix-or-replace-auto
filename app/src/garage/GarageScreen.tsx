@@ -3,6 +3,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { Vehicle } from '@fixorreplace/types';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useVehicles } from './useVehicles';
+import VehiclePhotoCircle from './VehiclePhotoCircle';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Garage'>;
 
@@ -68,11 +69,18 @@ function VehicleCard({
   return (
     <View style={styles.card}>
       <Pressable onPress={onPress}>
-        <Text style={styles.cardTitle}>{vehicle.nickname ?? `${vehicle.year} ${vehicle.make} ${vehicle.model}`}</Text>
-        <Text style={styles.cardSubtitle}>
-          {vehicle.year} {vehicle.make} {vehicle.model}
-          {vehicle.trim ? ` ${vehicle.trim}` : ''}
-        </Text>
+        <View style={styles.cardTopRow}>
+          <View style={styles.cardTitleBlock}>
+            <Text style={styles.cardTitle}>
+              {vehicle.nickname ?? `${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+            </Text>
+            <Text style={styles.cardSubtitle}>
+              {vehicle.year} {vehicle.make} {vehicle.model}
+              {vehicle.trim ? ` ${vehicle.trim}` : ''}
+            </Text>
+          </View>
+          <VehiclePhotoCircle vehicle={vehicle} size={48} />
+        </View>
         <Text style={styles.cardMileage}>{vehicle.currentMileage.toLocaleString()} miles</Text>
         <View style={styles.fixOrReplaceButton}>
           <Text style={styles.fixOrReplaceButtonText}>FIX OR REPLACE?</Text>
@@ -102,6 +110,8 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
   },
+  cardTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  cardTitleBlock: { flex: 1, marginRight: 12 },
   cardTitle: { fontSize: 17, fontWeight: '700' },
   cardSubtitle: { fontSize: 14, color: '#555', marginTop: 2 },
   cardMileage: { fontSize: 14, color: '#555', marginTop: 2, marginBottom: 12 },
