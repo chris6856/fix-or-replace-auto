@@ -15,7 +15,7 @@
 // Deploy with:
 //   supabase functions deploy email-report
 
-import { PDFDocument, StandardFonts, rgb, type PDFFont } from 'npm:pdf-lib@1.17.1';
+import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'npm:pdf-lib@1.17.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -68,6 +68,131 @@ function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): 
   return lines;
 }
 
+const RELIABILITY_LABEL: Record<string, string> = {
+  reliable: 'Good',
+  some_problems: 'Fair',
+  problem_vehicle: 'Poor',
+};
+
+const REPAIR_RISK_LABEL: Record<string, string> = {
+  reliable: 'Lower',
+  some_problems: 'Moderate',
+  problem_vehicle: 'Elevated',
+};
+
+/**
+ * Mirrors app/src/decision/mechanicQuestions.ts -- duplicated rather than
+ * shared since Edge Functions (Deno) and the RN app don't share code
+ * across that boundary in this project. Keep these two in sync if the
+ * question wording ever changes.
+ */
+function buildMechanicQuestions(repairCategory: string, repairCost: number): string[] {
+  const categoryLower = repairCategory.toLowerCase();
+  return [
+    `Is ${formatCurrency(repairCost)} the complete out-the-door repair price?`,
+    `Which ${categoryLower} components are being replaced?`,
+    'Which repairs are necessary now?',
+    'Are any items recommendations rather than required repairs?',
+    'What parts and labor warranty is included?',
+    'Do you see any other major repairs likely soon?',
+  ];
+}
+
+const PAGE_WIDTH = 612;
+const PAGE_HEIGHT = 792;
+const MARGIN_X = 56;
+const MAX_WIDTH = PAGE_WIDTH - MARGIN_X * 2;
+const TOP_Y = 740;
+const BOTTOM_MARGIN = 60;
+const MUTED: [number, number, number] = [0.4, 0.45, 0.48];
+const INK: [number, number, number] = [0.08, 0.09, 0.1];
+
+/** Small stateful writer so every section doesn't have to hand-manage
+ *  pagination -- a full report (side-by-side, 24-month outlook, threshold,
+ *  why, mechanic questions) routinely runs past one US Letter page. */
+class ReportWriter {
+  private page: PDFPage;
+  private y = TOP_Y;
+
+  constructor(
+    private doc: PDFDocument,
+    private font: PDFFont,
+    private boldFont: PDFFont,
+  ) {
+    this.page = doc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+  }
+
+  private ensureSpace(needed: number) {
+    if (this.y - needed < BOTTOM_MARGIN) {
+      this.page = this.doc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+      this.y = TOP_Y;
+    }
+  }
+
+  text(
+    value: string,
+    options: { size?: number; bold?: boolean; color?: [number, number, number]; gap?: number; x?: number } = {},
+  ) {
+    const size = options.size ?? 11;
+    this.ensureSpace(size + 6);
+    const useFont = options.bold ? this.boldFont : this.font;
+    const [r, g, b] = options.color ?? INK;
+    this.page.drawText(value, { x: options.x ?? MARGIN_X, y: this.y, size, font: useFont, color: rgb(r, g, b) });
+    this.y -= options.gap ?? size + 7;
+  }
+
+  /** Right-aligned value on the same baseline as a left label -- used for
+   *  the side-by-side table and outlook cards. */
+  labelValueRow(label: string, value: string, options: { bold?: boolean; size?: number } = {}) {
+    const size = options.size ?? 12;
+    this.ensureSpace(size + 8);
+    const font = options.bold ? this.boldFont : this.font;
+    this.page.drawText(label, { x: MARGIN_X, y: this.y, size, font, color: rgb(...INK) });
+    const valueWidth = font.widthOfTextAtSize(value, size);
+    this.page.drawText(value, {
+      x: MARGIN_X + MAX_WIDTH - valueWidth,
+      y: this.y,
+      size,
+      font,
+      color: rgb(...INK),
+    });
+    this.y -= size + 9;
+  }
+
+  sectionHeader(label: string) {
+    this.y -= 8;
+    this.text(label, { size: 10, bold: true, color: MUTED, gap: 18 });
+  }
+
+  paragraph(value: string, options: { size?: number; gap?: number; maxLines?: number } = {}) {
+    const size = options.size ?? 11;
+    const lines = wrapText(value, this.font, size, MAX_WIDTH);
+    const capped = options.maxLines ? lines.slice(0, options.maxLines) : lines;
+    for (const line of capped) {
+      this.text(line, { size, gap: options.gap ?? size + 4 });
+    }
+  }
+
+  hairline() {
+    this.ensureSpace(14);
+    this.page.drawLine({
+      start: { x: MARGIN_X, y: this.y + 4 },
+      end: { x: MARGIN_X + MAX_WIDTH, y: this.y + 4 },
+      thickness: 0.5,
+      color: rgb(0.85, 0.87, 0.88),
+    });
+    this.y -= 10;
+  }
+
+  space(amount: number) {
+    this.y -= amount;
+  }
+
+  save() {
+    return this.doc.save();
+  }
+}
+
 async function buildReportPdf(decision: any): Promise<Uint8Array> {
   const vehicle = decision.vehicles;
   const repairEvent = decision.repair_events;
@@ -75,79 +200,124 @@ async function buildReportPdf(decision: any): Promise<Uint8Array> {
   const input = decision.calc_input;
 
   const doc = await PDFDocument.create();
-  const page = doc.addPage([612, 792]); // US Letter
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const boldFont = await doc.embedFont(StandardFonts.HelveticaBold);
+  const w = new ReportWriter(doc, font, boldFont);
 
-  const marginX = 56;
-  const maxWidth = 500;
-  let y = 740;
-
-  function drawText(
-    text: string,
-    options: { size?: number; bold?: boolean; color?: [number, number, number]; gap?: number } = {},
-  ) {
-    const size = options.size ?? 11;
-    const useFont = options.bold ? boldFont : font;
-    const [r, g, b] = options.color ?? [0.08, 0.09, 0.1];
-    page.drawText(text, { x: marginX, y, size, font: useFont, color: rgb(r, g, b) });
-    y -= options.gap ?? size + 7;
-  }
-
-  drawText('Fix or Replace Auto', { size: 20, bold: true });
-  drawText(`Decision Report -- ${new Date(decision.created_at).toLocaleDateString()}`, {
+  // -- Header --
+  w.text('Fix or Replace Auto', { size: 20, bold: true });
+  w.text(`Decision Report -- ${new Date(decision.created_at).toLocaleDateString()}`, {
     size: 11,
-    color: [0.4, 0.45, 0.48],
-    gap: 30,
+    color: MUTED,
+    gap: 26,
   });
 
-  drawText('VEHICLE', { size: 10, bold: true, color: [0.4, 0.45, 0.48] });
-  drawText(`${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.trim ? ' ' + vehicle.trim : ''}`, {
+  // -- Vehicle --
+  w.sectionHeader('VEHICLE');
+  w.text(`${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.trim ? ' ' + vehicle.trim : ''}`, {
     size: 13,
     bold: true,
   });
-  if (vehicle.vin) drawText(`VIN: ${vehicle.vin}`, { size: 10, color: [0.4, 0.45, 0.48] });
-  drawText(`${Number(vehicle.current_mileage).toLocaleString()} miles`, {
-    size: 10,
-    color: [0.4, 0.45, 0.48],
-    gap: 28,
+  if (vehicle.vin) w.text(`VIN: ${vehicle.vin}`, { size: 10, color: MUTED });
+  w.text(`${Number(vehicle.current_mileage).toLocaleString()} miles`, { size: 10, color: MUTED });
+
+  // -- The repair --
+  w.sectionHeader('THE REPAIR');
+  w.paragraph(repairEvent?.description ?? repairEvent?.category ?? 'Repair', { size: 12, gap: 16 });
+  w.text(`Estimated cost: ${formatCurrency(repairEvent?.cost ?? input.keep.currentRepairCost)}`);
+
+  // -- Side-by-side (mirrors SideBySideScreen) --
+  w.sectionHeader('YOUR TWO OPTIONS: FIX vs. REPLACE');
+  const titleRegistration = input.replace.title + input.replace.registration;
+  const dealerFees = input.replace.docFee + input.replace.delivery + input.replace.otherFees;
+  const fixCost = input.keep.currentRepairCost;
+  const replaceCost = output.totalAcquisitionCostIncludingFinancing;
+  w.labelValueRow('Repair (fix)', formatCurrency(fixCost));
+  w.labelValueRow('Replacement vehicle', formatCurrency(input.replace.replacementPrice));
+  w.labelValueRow('Sales tax', formatCurrency(input.replace.salesTax));
+  w.labelValueRow('Title/registration', formatCurrency(titleRegistration));
+  w.labelValueRow('Dealer/delivery fees', formatCurrency(dealerFees));
+  w.labelValueRow('Current vehicle credit', `-${formatCurrency(input.replace.tradeOrSaleValue)}`);
+  w.labelValueRow('Financing interest', formatCurrency(output.totalInterest));
+  w.hairline();
+  w.labelValueRow('Fix: total estimated cost', formatCurrency(fixCost), { bold: true });
+  w.labelValueRow('Replace: total estimated cost', formatCurrency(replaceCost), { bold: true });
+  const diff = Math.abs(fixCost - replaceCost);
+  const diffLabel = fixCost <= replaceCost ? 'Fixing preserves approximately' : 'Replacing saves approximately';
+  w.space(4);
+  w.text(`${diffLabel} ${formatCurrency(diff)}`, { size: 12, bold: true, gap: 18 });
+  w.paragraph(
+    "Repairing also carries greater future repair risk because of the vehicle's age and mileage -- this " +
+      'report does not pretend a repair makes an older vehicle new.',
+    { size: 9, color: MUTED, gap: 13 },
+  );
+
+  // -- Next 24 months (mirrors OutlookScreen) --
+  w.sectionHeader('THE NEXT 24 MONTHS');
+  w.text('Fix current vehicle', { size: 11, bold: true, gap: 16 });
+  w.labelValueRow('Repair now', formatCurrency(input.keep.currentRepairCost), { size: 10 });
+  w.labelValueRow('Recent repair history', formatCurrency(input.keep.recentRepairsSum), { size: 10 });
+  w.labelValueRow('Vehicle', `${input.keep.ageYears} yrs / ${input.keep.mileage.toLocaleString()} mi`, { size: 10 });
+  w.labelValueRow('Reliability', RELIABILITY_LABEL[input.keep.reliabilityBucket] ?? '--', { size: 10 });
+  w.labelValueRow('Additional repair risk', REPAIR_RISK_LABEL[input.keep.reliabilityBucket] ?? '--', { size: 10 });
+  w.space(10);
+  w.text('Replace vehicle', { size: 11, bold: true, gap: 16 });
+  w.labelValueRow('Initial net acquisition', formatCurrency(output.netReplacementAcquisitionCost), { size: 10 });
+  const monthsFinanced = Math.min(24, input.replace.loanTermMonths);
+  const paymentsOver24Months = input.replace.financeMethod === 'finance' ? output.monthlyPayment * monthsFinanced : 0;
+  w.labelValueRow(
+    'Monthly payment',
+    input.replace.financeMethod === 'finance' ? `${formatCurrency(output.monthlyPayment)}/mo` : 'N/A (cash)',
+    { size: 10 },
+  );
+  w.labelValueRow('Payments over 24 months', formatCurrency(paymentsOver24Months), { size: 10 });
+  w.paragraph('Not included above: potential insurance changes, routine maintenance.', {
+    size: 9,
+    color: MUTED,
+    gap: 13,
   });
 
-  drawText('THE REPAIR', { size: 10, bold: true, color: [0.4, 0.45, 0.48] });
-  for (const line of wrapText(repairEvent?.description ?? repairEvent?.category ?? 'Repair', font, 12, maxWidth)) {
-    drawText(line, { size: 12 });
-  }
-  drawText(`Estimated cost: ${formatCurrency(repairEvent?.cost ?? input.keep.currentRepairCost)}`, { gap: 28 });
+  // -- Repair threshold (mirrors ThresholdScreen) --
+  w.sectionHeader('YOUR REPAIR THRESHOLD');
+  w.text(formatCurrency(output.repairThreshold), { size: 22, bold: true, gap: 26 });
+  w.paragraph(
+    "Based on the replacement option entered, this vehicle's condition, mileage, recent repair history, and " +
+      'current value, repairing remains financially competitive up to approximately this amount.',
+    { size: 10, color: MUTED, gap: 14 },
+  );
+  const margin = Math.abs(output.repairThreshold - fixCost);
+  const isBelow = fixCost <= output.repairThreshold;
+  w.labelValueRow('Your estimate', formatCurrency(fixCost), { size: 11 });
+  w.labelValueRow(isBelow ? 'Below threshold by' : 'Above threshold by', formatCurrency(margin), { size: 11 });
 
-  drawText('THE NUMBERS', { size: 10, bold: true, color: [0.4, 0.45, 0.48] });
-  drawText(`Repair cost: ${formatCurrency(input.keep.currentRepairCost)}`);
-  drawText(`Net cost to replace instead: ${formatCurrency(output.netReplacementAcquisitionCost)}`);
-  drawText(`Repair threshold: ${formatCurrency(output.repairThreshold)}`);
-  drawText(`Your current equity: ${formatCurrency(output.currentEquity)}`, { gap: 32 });
-
+  // -- Recommendation --
+  w.space(10);
   const recLabel = RECOMMENDATION_LABEL[output.recommendation] ?? String(output.recommendation);
-  drawText(`RECOMMENDATION: ${recLabel}`, { size: 15, bold: true, gap: 30 });
+  w.text(`RECOMMENDATION: ${recLabel}`, { size: 16, bold: true, gap: 26 });
 
+  // -- Why --
   if (decision.ai_explanation) {
-    drawText('WHY', { size: 10, bold: true, color: [0.4, 0.45, 0.48] });
-    const explanationLines = wrapText(decision.ai_explanation, font, 11, maxWidth).slice(0, 10);
-    for (const line of explanationLines) {
-      drawText(line, { size: 11, gap: 15 });
-    }
-    y -= 14;
+    w.sectionHeader('WHY');
+    w.paragraph(decision.ai_explanation, { size: 11, gap: 15 });
   }
 
-  drawText(
-    'This report provides estimates to help you think through a repair-versus-replace decision. It is not',
-    { size: 8, color: [0.55, 0.6, 0.62], gap: 11 },
-  );
-  drawText(
-    "mechanical, financial, or tax advice, and does not replace a qualified mechanic's inspection.",
-    { size: 8, color: [0.55, 0.6, 0.62], gap: 14 },
-  );
-  drawText('fixorreplaceauto.com', { size: 9, color: [0.55, 0.6, 0.62] });
+  // -- Questions for the mechanic --
+  w.sectionHeader('QUESTIONS TO ASK YOUR MECHANIC');
+  const questions = buildMechanicQuestions(repairEvent?.category ?? 'General Repair', fixCost);
+  questions.forEach((question, index) => {
+    w.paragraph(`${index + 1}. ${question}`, { size: 11, gap: 15 });
+  });
 
-  return doc.save();
+  // -- Disclaimer / footer --
+  w.space(14);
+  w.paragraph(
+    "This report provides estimates to help you think through a repair-versus-replace decision. It is not " +
+      "mechanical, financial, or tax advice, and does not replace a qualified mechanic's inspection.",
+    { size: 8, color: MUTED, gap: 11 },
+  );
+  w.text('fixorreplaceauto.com', { size: 9, color: MUTED });
+
+  return w.save();
 }
 
 Deno.serve(async (req) => {
