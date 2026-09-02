@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { PossibleIssue } from '@fixorreplace/types';
 import type { AppStackParamList } from '../navigation/RootNavigator';
@@ -53,7 +53,7 @@ export default function SymptomResultScreen({ route, navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.symptomLabel}>YOU DESCRIBED</Text>
       <Text style={styles.symptomText}>{symptomDescription}</Text>
 
@@ -93,12 +93,13 @@ export default function SymptomResultScreen({ route, navigation }: Props) {
       <Pressable style={styles.primaryButton} onPress={handleSave} disabled={isSaving}>
         {isSaving ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>SAVE</Text>}
       </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#fff' },
+  content: { padding: 20, paddingBottom: 40 },
   symptomLabel: { fontSize: 12, fontWeight: '700', color: '#999' },
   symptomText: { fontSize: 15, color: '#333', marginTop: 4, marginBottom: 16 },
   safetyBanner: {
