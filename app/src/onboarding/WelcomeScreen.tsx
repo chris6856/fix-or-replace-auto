@@ -13,7 +13,7 @@ export default function WelcomeScreen({ navigation }: Props) {
       resizeMode="cover"
     >
       <Text style={styles.title}>FIX OR REPLACE AUTO</Text>
-      <Text style={styles.tagline}>Know before you spend.</Text>
+      <Text style={styles.tagline}>Your Automatic Second Opinion</Text>
 
       <Text style={styles.body}>Your repair shop just called.{'\n'}Should you:</Text>
 
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   // prominent element -- the photo reads as mood/texture, not content.
   backgroundImage: { opacity: 0.26 },
   title: { fontSize: 28, fontWeight: '800', textAlign: 'center', marginBottom: 8 },
-  tagline: { fontSize: 16, textAlign: 'center', color: '#555', marginBottom: 32 },
+  tagline: { fontSize: 16, fontStyle: 'italic', textAlign: 'center', color: '#555', marginBottom: 32 },
   body: { fontSize: 16, textAlign: 'center', marginBottom: 16, color: '#333' },
   optionsList: { marginBottom: 24 },
   option: { fontSize: 18, fontWeight: '700', textAlign: 'center', marginVertical: 4 },

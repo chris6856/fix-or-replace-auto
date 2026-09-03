@@ -55,61 +55,91 @@ export default function ReplacementCostsScreen({ navigation }: Props) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>REAL COST TO REPLACE</Text>
+    <View style={styles.outer}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>REAL COST TO REPLACE</Text>
 
-      <View style={styles.row}>
-        <Text style={styles.rowLabel}>Purchase Price</Text>
-        <Text style={styles.rowValue}>${draft.replacementPrice.toLocaleString()}</Text>
+        <View style={styles.row}>
+          <Text style={styles.rowLabel}>Purchase Price</Text>
+          <Text style={styles.rowValue}>${draft.replacementPrice.toLocaleString()}</Text>
+        </View>
+
+        <Text style={styles.defaultsNote}>
+          We've pre-filled typical nationwide estimates below -- adjust for your state and dealer.
+        </Text>
+
+        <Text style={styles.sectionLabel}>Sales Tax</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="$ 0"
+          keyboardType="decimal-pad"
+          value={salesTax}
+          onChangeText={setSalesTax}
+        />
+
+        <Text style={styles.sectionLabel}>Title / Registration</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="$ 0"
+          keyboardType="decimal-pad"
+          value={titleRegistration}
+          onChangeText={setTitleRegistration}
+        />
+
+        <Text style={styles.sectionLabel}>Dealer Documentation Fee</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="$ 0"
+          keyboardType="decimal-pad"
+          value={docFee}
+          onChangeText={setDocFee}
+        />
+
+        <Text style={styles.sectionLabel}>Delivery / Transportation</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="$ 0"
+          keyboardType="decimal-pad"
+          value={delivery}
+          onChangeText={setDelivery}
+        />
+
+        <Text style={styles.sectionLabel}>Other Dealer Fees</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="$ 0"
+          keyboardType="decimal-pad"
+          value={otherFees}
+          onChangeText={setOtherFees}
+        />
+
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>OUT-THE-DOOR PRICE</Text>
+          <Text style={styles.summaryValue}>${outTheDoorPrice.toLocaleString()}</Text>
+          <Text style={styles.summaryHelper}>This is the number we compare -- not the sticker price.</Text>
+        </View>
+      </ScrollView>
+
+      <View style={styles.footer}>
+        <Pressable style={styles.primaryButton} onPress={handleContinue}>
+          <Text style={styles.primaryButtonText}>CONTINUE</Text>
+        </Pressable>
       </View>
-
-      <Text style={styles.defaultsNote}>
-        We've pre-filled typical nationwide estimates below -- adjust for your state and dealer.
-      </Text>
-
-      <Text style={styles.sectionLabel}>Sales Tax</Text>
-      <TextInput style={styles.input} placeholder="$ 0" keyboardType="decimal-pad" value={salesTax} onChangeText={setSalesTax} />
-
-      <Text style={styles.sectionLabel}>Title / Registration</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="$ 0"
-        keyboardType="decimal-pad"
-        value={titleRegistration}
-        onChangeText={setTitleRegistration}
-      />
-
-      <Text style={styles.sectionLabel}>Dealer Documentation Fee</Text>
-      <TextInput style={styles.input} placeholder="$ 0" keyboardType="decimal-pad" value={docFee} onChangeText={setDocFee} />
-
-      <Text style={styles.sectionLabel}>Delivery / Transportation</Text>
-      <TextInput style={styles.input} placeholder="$ 0" keyboardType="decimal-pad" value={delivery} onChangeText={setDelivery} />
-
-      <Text style={styles.sectionLabel}>Other Dealer Fees</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="$ 0"
-        keyboardType="decimal-pad"
-        value={otherFees}
-        onChangeText={setOtherFees}
-      />
-
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryLabel}>OUT-THE-DOOR PRICE</Text>
-        <Text style={styles.summaryValue}>${outTheDoorPrice.toLocaleString()}</Text>
-        <Text style={styles.summaryHelper}>This is the number we compare -- not the sticker price.</Text>
-      </View>
-
-      <Pressable style={styles.primaryButton} onPress={handleContinue}>
-        <Text style={styles.primaryButtonText}>CONTINUE</Text>
-      </Pressable>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  outer: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1 },
   content: { padding: 20 },
+  footer: {
+    padding: 20,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    backgroundColor: '#fff',
+  },
   title: { fontSize: 20, fontWeight: '800', marginBottom: 20 },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#eee' },
   rowLabel: { fontSize: 15, color: '#333' },
@@ -134,7 +164,6 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: 26, fontWeight: '800', marginTop: 4 },
   summaryHelper: { fontSize: 12, color: '#888', marginTop: 6 },
   primaryButton: {
-    marginTop: 24,
     height: 48,
     borderRadius: 8,
     backgroundColor: '#111',

@@ -53,7 +53,7 @@ export default function ReplacementPriceScreen({ navigation }: Props) {
     <View style={styles.container}>
       <Text style={styles.title}>REPLACEMENT VEHICLE</Text>
 
-      <Text style={styles.sectionLabel}>Expected Purchase Price</Text>
+      <Text style={styles.sectionLabel}>Cost of Replacement Vehicle</Text>
       <TextInput style={styles.input} placeholder="$ 0" keyboardType="decimal-pad" value={price} onChangeText={setPrice} />
 
       <Text style={styles.sectionLabel}>Trade or sell current vehicle?</Text>
