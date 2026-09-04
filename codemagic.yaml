@@ -1,0 +1,47 @@
+workflows:
+  ios-testflight:
+    name: iOS TestFlight
+    max_build_duration: 90
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: fix_or_replace_asc
+    environment:
+      groups:
+        - fix_or_replace_secrets
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.fixorreplaceauto.app
+      node: 20.18.1
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install root workspace dependencies
+        script: |
+          npm ci
+      - name: Build shared packages (types, calc-engine)
+        script: |
+          npm run build:packages
+      - name: Run Expo prebuild (iOS)
+        script: |
+          cd app
+          npx expo prebuild --platform ios --non-interactive
+      - name: Install CocoaPods dependencies
+        script: |
+          cd app/ios
+          pod install
+      - name: Set up code signing on the Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Build ipa for distribution
+        script: |
+          WORKSPACE=$(find "$CM_BUILD_DIR/app/ios" -maxdepth 1 -name "*.xcworkspace" | head -1)
+          SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list | awk '/Schemes:/{flag=1;next}/^[^ ]/{flag=0}flag' | sed 's/^ *//' | grep -v Pods | head -1)
+          echo "Building workspace=$WORKSPACE scheme=$SCHEME"
+          xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
