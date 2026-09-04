@@ -27,7 +27,7 @@ export default function WelcomeScreen({ navigation }: Props) {
         We'll compare the cost of repairing your current vehicle with the real cost of replacing it.
       </Text>
 
-      <Pressable style={styles.button} onPress={() => navigation.navigate('SignIn')}>
+      <Pressable style={styles.button} onPress={() => navigation.navigate('Walkthrough')}>
         <Text style={styles.buttonText}>GET STARTED</Text>
       </Pressable>
     </ImageBackground>

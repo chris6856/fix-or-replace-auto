@@ -1,11 +1,14 @@
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useQueryClient } from '@tanstack/react-query';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useVehicle } from '../garage/useVehicles';
 import { useDecisionDraft } from './DecisionDraftContext';
 import RecommendationBadge from './RecommendationBadge';
 import { explainResult, formatCurrency } from './explainResult';
 import { PRODUCT_PRICES } from '../purchases/iap';
+import { saveDecision } from './saveDecision';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Result'>;
 
@@ -14,10 +17,25 @@ export default function ResultScreen({ route, navigation }: Props) {
   const { input, output } = result;
   const { draft } = useDecisionDraft();
   const { data: vehicle } = useVehicle(draft?.vehicleId ?? '');
+  const queryClient = useQueryClient();
   // 'decision' ($0.99) is view-once, nothing deeper; 'free' and 'full' get
   // everything. Treat a missing tier (shouldn't normally happen) as full
   // access rather than silently blocking someone who already paid.
   const hasFullAccess = unlockedTier !== 'decision';
+
+  // The $0.99 tier never reaches Screen 28's explicit Save step, but the
+  // user already paid for this recommendation -- it should show up in
+  // their vehicle history without an extra tap. A ref guards against the
+  // effect firing twice (React Strict Mode) and double-inserting.
+  const [autoSaveError, setAutoSaveError] = useState(false);
+  const hasAutoSaved = useRef(false);
+  useEffect(() => {
+    if (unlockedTier !== 'decision' || !draft || hasAutoSaved.current) return;
+    hasAutoSaved.current = true;
+    saveDecision(draft, input, output, null)
+      .then(() => queryClient.invalidateQueries({ queryKey: ['decisions', draft.vehicleId] }))
+      .catch(() => setAutoSaveError(true));
+  }, [unlockedTier, draft, input, output, queryClient]);
 
   return (
     <View style={styles.container}>
@@ -50,12 +68,17 @@ export default function ResultScreen({ route, navigation }: Props) {
           <Text style={styles.primaryButtonText}>SEE THE FULL BREAKDOWN</Text>
         </Pressable>
       ) : (
-        <Pressable
-          style={styles.primaryButton}
-          onPress={() => navigation.navigate('Paywall', { result, upgradeOnly: true })}
-        >
-          <Text style={styles.primaryButtonText}>UNLOCK FULL REPORT -- {PRODUCT_PRICES.unlock_full_report}</Text>
-        </Pressable>
+        <>
+          <Pressable
+            style={styles.primaryButton}
+            onPress={() => navigation.navigate('Paywall', { result, upgradeOnly: true })}
+          >
+            <Text style={styles.primaryButtonText}>UNLOCK FULL REPORT -- {PRODUCT_PRICES.unlock_full_report}</Text>
+          </Pressable>
+          <Text style={styles.autoSaveNote}>
+            {autoSaveError ? 'Could not save this to your vehicle history.' : 'Saved to your vehicle history.'}
+          </Text>
+        </>
       )}
     </View>
   );
@@ -80,4 +103,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   primaryButtonText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  autoSaveNote: { fontSize: 12, color: '#888', textAlign: 'center', marginTop: 12 },
 });

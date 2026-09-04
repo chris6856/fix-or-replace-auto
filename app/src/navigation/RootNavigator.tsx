@@ -4,6 +4,7 @@ import { createNativeStackNavigator, type NativeStackNavigationOptions } from '@
 import { useAuth } from '../auth/AuthContext';
 import SignInScreen from '../auth/SignInScreen';
 import WelcomeScreen from '../onboarding/WelcomeScreen';
+import WalkthroughScreen from '../onboarding/WalkthroughScreen';
 import GarageScreen from '../garage/GarageScreen';
 import AddVehicleScreen from '../garage/AddVehicleScreen';
 import ScanVinScreen from '../garage/ScanVinScreen';
@@ -40,6 +41,7 @@ import type { PossibleIssue } from '@fixorreplace/types';
 
 export type AuthStackParamList = {
   Welcome: undefined;
+  Walkthrough: undefined;
   SignIn: undefined;
 };
 
@@ -146,6 +148,26 @@ function CancelDecisionButton() {
 }
 
 /**
+ * The $0.99 "decision only" tier never had anything to save, so unlike
+ * CancelDecisionButton this needs no "your progress will be lost" warning
+ * -- there's no progress left to lose, just a plain way back to the Garage.
+ */
+function DoneButton() {
+  const { clearDraft } = useDecisionDraft();
+
+  function handlePress() {
+    clearDraft();
+    rootNavigationRef?.reset({ index: 0, routes: [{ name: 'Garage' }] });
+  }
+
+  return (
+    <Pressable onPress={handlePress} hitSlop={12} style={styles.saveButton}>
+      <Text style={styles.saveButtonText}>Done</Text>
+    </Pressable>
+  );
+}
+
+/**
  * Once the analysis has actually run (Screens 21-27, from the result
  * onward), the user shouldn't have to click through Why/Questions just to
  * save -- Save sits next to Cancel from here on, going to the same
@@ -191,6 +213,8 @@ function decisionScreenOptionsWithSave(
     headerRight: () =>
       route.params?.result && route.params.unlockedTier !== 'decision' ? (
         <SaveAndCancelButtons result={route.params.result} explanation={route.params.explanation} />
+      ) : route.params?.unlockedTier === 'decision' ? (
+        <DoneButton />
       ) : (
         <CancelDecisionButton />
       ),
@@ -345,6 +369,7 @@ export default function RootNavigator() {
       ) : (
         <AuthStack.Navigator screenOptions={{ headerShown: false }}>
           <AuthStack.Screen name="Welcome" component={WelcomeScreen} />
+          <AuthStack.Screen name="Walkthrough" component={WalkthroughScreen} />
           <AuthStack.Screen name="SignIn" component={SignInScreen} />
         </AuthStack.Navigator>
       )}
