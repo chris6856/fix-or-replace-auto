@@ -54,9 +54,15 @@ workflows:
           xcode-project use-profiles --project "$PROJECT" --verbose
       - name: Generate export options plist
         script: |
+          # PlistBuddy can't reliably read a piped /dev/stdin (it seeks the
+          # file, which a pipe doesn't support) -- decode to a real temp
+          # file first, which is what silently produced literal
+          # "Error Reading File" strings as the team ID / profile name.
           PROFILE_PATH=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.mobileprovision" | head -1)
-          PROFILE_NAME=$(security cms -D -i "$PROFILE_PATH" | /usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin)
-          TEAM_ID=$(security cms -D -i "$PROFILE_PATH" | /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /dev/stdin)
+          DECODED_PROFILE="$HOME/decoded_profile.plist"
+          security cms -D -i "$PROFILE_PATH" -o "$DECODED_PROFILE"
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" "$DECODED_PROFILE")
+          TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" "$DECODED_PROFILE")
           echo "Using profile '$PROFILE_NAME' from team $TEAM_ID"
 
           EXPORT_PLIST="$HOME/custom_export_options.plist"
@@ -70,6 +76,16 @@ workflows:
           cat "$EXPORT_PLIST"
       - name: Build ipa for distribution
         script: |
+          # xcode-project build-ipa routes --export-options-plist through the
+          # same ExportOptions model that rejects "app-store-connect" as an
+          # unrecognized method (see the earlier ValueError from
+          # use-profiles) -- it's not actually validating file syntax
+          # despite the "is not a valid property list" wording, since
+          # plutil -lint confirms the file itself is well-formed. Calling
+          # xcodebuild directly for archive + export skips that broken
+          # validation entirely; Apple's own tool is the one that actually
+          # needs to accept this value, and it does.
+          set -o pipefail
           # Derive both from the app's own .xcodeproj rather than parsing
           # `xcodebuild -list`'s scheme listing -- that listing also includes
           # every CocoaPods dependency's own shared scheme (e.g. "AppAuth"),
@@ -80,12 +96,24 @@ workflows:
           PROJECT=$(find "$CM_BUILD_DIR/app/ios" -maxdepth 1 -name "*.xcodeproj" | head -1)
           SCHEME=$(basename "$PROJECT" .xcodeproj)
           echo "Building workspace=$WORKSPACE scheme=$SCHEME"
-          echo "--- export options plist debug ---"
-          ls -la "$HOME/custom_export_options.plist"
-          plutil -lint "$HOME/custom_export_options.plist"
-          cat "$HOME/custom_export_options.plist"
-          echo "--- end debug ---"
-          xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$SCHEME" --export-options-plist "$HOME/custom_export_options.plist"
+
+          ARCHIVE_PATH="$CM_BUILD_DIR/build/ios/xcarchive/$SCHEME.xcarchive"
+          IPA_DIR="$CM_BUILD_DIR/build/ios/ipa"
+          mkdir -p "$(dirname "$ARCHIVE_PATH")" "$IPA_DIR"
+
+          xcodebuild archive \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -archivePath "$ARCHIVE_PATH" \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            | xcpretty
+
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$IPA_DIR" \
+            -exportOptionsPlist "$HOME/custom_export_options.plist" \
+            | xcpretty
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
