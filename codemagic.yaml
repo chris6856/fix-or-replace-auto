@@ -80,6 +80,11 @@ workflows:
           PROJECT=$(find "$CM_BUILD_DIR/app/ios" -maxdepth 1 -name "*.xcodeproj" | head -1)
           SCHEME=$(basename "$PROJECT" .xcodeproj)
           echo "Building workspace=$WORKSPACE scheme=$SCHEME"
+          echo "--- export options plist debug ---"
+          ls -la "$HOME/custom_export_options.plist"
+          plutil -lint "$HOME/custom_export_options.plist"
+          cat "$HOME/custom_export_options.plist"
+          echo "--- end debug ---"
           xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$SCHEME" --export-options-plist "$HOME/custom_export_options.plist"
     artifacts:
       - build/ios/ipa/*.ipa
