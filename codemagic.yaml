@@ -8,9 +8,6 @@ workflows:
     environment:
       groups:
         - fix_or_replace_secrets
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.fixorreplaceauto.app
       vars:
         BUNDLE_ID: "com.fixorreplaceauto.app"
       node: 20.18.1
