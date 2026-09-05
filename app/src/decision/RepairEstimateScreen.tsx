@@ -13,6 +13,7 @@ export default function RepairEstimateScreen({ navigation }: Props) {
   const { data: symptomChecks } = useSymptomChecks(draft?.vehicleId ?? '');
   const [estimate, setEstimate] = useState('');
   const [description, setDescription] = useState('');
+  const [shopName, setShopName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,6 +50,7 @@ export default function RepairEstimateScreen({ navigation }: Props) {
       repairDescriptionRaw: description.trim(),
       repairCategory: extraction?.category ?? null,
       isSafetyIssue: extraction?.isSafetyIssue ?? null,
+      repairShopName: shopName.trim() || null,
     });
 
     setIsSubmitting(false);
@@ -90,6 +92,14 @@ export default function RepairEstimateScreen({ navigation }: Props) {
         keyboardType="decimal-pad"
         value={estimate}
         onChangeText={setEstimate}
+      />
+
+      <Text style={styles.sectionLabel}>Repair Shop (optional)</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="e.g. Joe's Auto Repair"
+        value={shopName}
+        onChangeText={setShopName}
       />
 
       <Text style={styles.sectionLabel}>What's being repaired?</Text>

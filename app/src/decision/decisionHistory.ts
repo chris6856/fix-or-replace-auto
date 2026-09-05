@@ -7,6 +7,7 @@ export interface DecisionHistoryItem {
   recommendation: Recommendation;
   category: string;
   cost: number;
+  shopName: string | null;
   createdAt: string;
 }
 
@@ -14,13 +15,13 @@ interface DecisionRow {
   id: string;
   recommendation: Recommendation;
   created_at: string;
-  repair_events: { category: string; cost: number } | null;
+  repair_events: { category: string; cost: number; shop_name: string | null } | null;
 }
 
 export async function fetchDecisionHistory(vehicleId: string): Promise<DecisionHistoryItem[]> {
   const { data, error } = await supabase
     .from('decisions')
-    .select('id, recommendation, created_at, repair_events(category, cost)')
+    .select('id, recommendation, created_at, repair_events(category, cost, shop_name)')
     .eq('vehicle_id', vehicleId)
     .order('created_at', { ascending: false });
 
@@ -31,6 +32,7 @@ export async function fetchDecisionHistory(vehicleId: string): Promise<DecisionH
     recommendation: row.recommendation,
     category: row.repair_events?.category ?? 'Repair',
     cost: row.repair_events?.cost ?? 0,
+    shopName: row.repair_events?.shop_name ?? null,
     createdAt: row.created_at,
   }));
 }

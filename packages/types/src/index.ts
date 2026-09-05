@@ -35,6 +35,7 @@ export interface RepairEvent {
   cost: number;
   isSafetyIssue: boolean | null;
   source: 'estimate' | 'user_reported';
+  shopName: string | null;
   createdAt: string;
 }
 

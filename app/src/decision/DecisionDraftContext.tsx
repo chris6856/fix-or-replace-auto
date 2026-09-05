@@ -18,6 +18,7 @@ export interface DecisionDraft {
   repairDescriptionRaw: string;
   repairCategory: string | null;
   isSafetyIssue: boolean | null;
+  repairShopName: string | null;
 
   // Screen 12
   reliabilityBucket: ReliabilityBucket | null;
@@ -67,6 +68,7 @@ function createEmptyDraft(vehicleId: string, vehicleYear: number, currentMileage
     repairDescriptionRaw: '',
     repairCategory: null,
     isSafetyIssue: null,
+    repairShopName: null,
     reliabilityBucket: null,
     recentRepairsSum: 0,
     hasLoan: null,

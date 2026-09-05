@@ -21,6 +21,7 @@ export async function saveDecision(
       category: draft.repairCategory ?? 'General Repair',
       cost: draft.totalRepairEstimate,
       is_safety_issue: draft.isSafetyIssue,
+      shop_name: draft.repairShopName,
       source: 'estimate',
     })
     .select('id')
