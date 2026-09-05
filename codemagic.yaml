@@ -43,21 +43,41 @@ workflows:
       - name: Set up code signing on the Xcode project
         script: |
           # Restrict to the app's own .xcodeproj (maxdepth 1 excludes
-          # ios/Pods/Pods.xcodeproj) -- letting use-profiles also touch the
-          # Pods project alongside the custom export-options merge is what
-          # was crashing this step with an unhandled exception.
+          # ios/Pods/Pods.xcodeproj) -- this only assigns the fetched
+          # certificate/profile to the project's build settings. The export
+          # options plist itself is written separately below, since
+          # use-profiles' own --custom-export-options validates "method"
+          # against an enum that doesn't know Apple's "app-store-connect"
+          # rename yet and throws on it.
           PROJECT=$(find "$CM_BUILD_DIR/app/ios" -maxdepth 1 -name "*.xcodeproj" | head -1)
           echo "Using project=$PROJECT"
-          # Xcode's export options schema renamed the "app-store" method to
-          # "app-store-connect" -- use-profiles still defaults to the old
-          # name, which newer Xcode rejects outright during export.
-          xcode-project use-profiles --project "$PROJECT" --custom-export-options '{"method": "app-store-connect"}' --verbose
+          xcode-project use-profiles --project "$PROJECT" --verbose
+      - name: Generate export options plist
+        script: |
+          PROFILE_PATH=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.mobileprovision" | head -1)
+          PROFILE_NAME=$(security cms -D -i "$PROFILE_PATH" | /usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin)
+          TEAM_ID=$(security cms -D -i "$PROFILE_PATH" | /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /dev/stdin)
+          echo "Using profile '$PROFILE_NAME' from team $TEAM_ID"
+
+          EXPORT_PLIST="$HOME/custom_export_options.plist"
+          cat > "$EXPORT_PLIST" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict/>
+          </plist>
+          PLIST
+          /usr/libexec/PlistBuddy -c "Add :method string app-store-connect" "$EXPORT_PLIST"
+          /usr/libexec/PlistBuddy -c "Add :teamID string $TEAM_ID" "$EXPORT_PLIST"
+          /usr/libexec/PlistBuddy -c "Add :signingStyle string manual" "$EXPORT_PLIST"
+          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" "$EXPORT_PLIST"
+          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:$BUNDLE_ID string $PROFILE_NAME" "$EXPORT_PLIST"
       - name: Build ipa for distribution
         script: |
           WORKSPACE=$(find "$CM_BUILD_DIR/app/ios" -maxdepth 1 -name "*.xcworkspace" | head -1)
           SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list | awk '/Schemes:/{flag=1;next}/^[^ ]/{flag=0}flag' | sed 's/^ *//' | grep -v Pods | head -1)
           echo "Building workspace=$WORKSPACE scheme=$SCHEME"
-          xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$SCHEME"
+          xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$SCHEME" --export-options-plist "$HOME/custom_export_options.plist"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
