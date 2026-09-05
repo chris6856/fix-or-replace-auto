@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Get Your Recommendation — Fix or Replace Auto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #14181C; --ink-soft: #3A4248; --paper: #F4F6F5; --panel: #E7EBEA;
+    --panel-line: #D3D9D8; --steel: #4A5A63; --steel-soft: #6B7B83;
+    --amber-ink: #7A4B0E; --amber-tint: #F3E2C8; --green: #2F7A4F; --green-tint: #DCEBE1;
+    --red: #C62828;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace; line-height: 1.5;
+  }
+  h1, h2, .serif { font-family: 'Source Serif 4', Georgia, serif; }
+  a { color: inherit; }
+  .top { padding: 20px 24px; border-bottom: 1px solid var(--panel-line); }
+  .brand { font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 19px; text-decoration: none; }
+  .wrap { max-width: 620px; margin: 0 auto; padding: 40px 24px 80px; }
+  .eyebrow { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--steel); }
+  h1 { font-size: clamp(1.7rem, 4vw, 2.2rem); margin: 6px 0 28px; }
+  .step { display: none; }
+  .step.active { display: block; }
+  label { display: block; font-size: 13px; color: var(--steel); margin: 18px 0 6px; }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=number], input[type=email], select {
+    width: 100%; padding: 12px 14px; font-size: 16px; font-family: inherit;
+    border: 1px solid var(--panel-line); border-radius: 6px; background: #fff; color: var(--ink);
+  }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 9px 14px; border-radius: 20px; border: 1px solid var(--panel-line);
+    font-size: 13px; cursor: pointer; background: #fff; color: var(--ink-soft);
+  }
+  .chip.selected { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; }
+  .btn-primary {
+    font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 17px;
+    color: var(--paper); background: var(--ink); border: none; border-radius: 5px;
+    padding: 13px 26px; cursor: pointer;
+  }
+  .btn-primary:hover { background: var(--amber-ink); }
+  .btn-primary:disabled { opacity: 0.4; cursor: default; }
+  .btn-back {
+    font-size: 14px; color: var(--steel); background: none; border: none; cursor: pointer;
+    text-decoration: underline; padding: 8px 0;
+  }
+  .error { color: var(--red); font-size: 14px; margin-top: 14px; }
+  .helper { font-size: 12.5px; color: var(--steel-soft); margin-top: -2px; margin-bottom: 4px; }
+  .progress { font-size: 12px; color: var(--steel); margin-bottom: 6px; letter-spacing: 0.04em; }
+
+  .paywall-card, .result-card {
+    border: 1px solid var(--panel-line); border-radius: 8px; padding: 24px; background: #fff;
+  }
+  .paywall-option {
+    border: 1px solid var(--panel-line); border-radius: 8px; padding: 20px; margin-bottom: 14px;
+  }
+  .paywall-option h3 { margin: 0 0 6px; font-size: 19px; }
+  .paywall-option p { margin: 0 0 14px; color: var(--ink-soft); font-size: 14.5px; }
+  .price { font-family: 'Source Serif 4', Georgia, serif; font-weight: 800; font-size: 15px; }
+
+  .verdict { display: flex; align-items: center; gap: 10px; background: var(--green-tint); border-radius: 6px; padding: 14px 16px; margin: 18px 0; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .verdict p { margin: 0; font-size: 16px; }
+  .estimate-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--panel-line); font-size: 14.5px; }
+  .estimate-row .value { font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; }
+  .estimate-row.total { border-top: 1px solid var(--ink); border-bottom: none; margin-top: 6px; padding-top: 12px; }
+
+  .email-form { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .email-form input { flex: 1; min-width: 200px; }
+  .success-note { color: var(--green); font-size: 14px; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <a class="brand" href="../">← Fix or Replace Auto</a>
+</div>
+
+<div class="wrap">
+
+  <!-- Step 0: canceled notice (hidden unless ?canceled=1) -->
+  <div id="canceled-notice" class="error" style="display:none; margin-bottom: 20px;">
+    Checkout was canceled — no charge was made. Pick up right where you left off below.
+  </div>
+
+  <!-- Step: Vehicle -->
+  <section class="step" id="step-vehicle">
+    <div class="progress">STEP 1 OF 5</div>
+    <div class="eyebrow">Already have an estimate?</div>
+    <h1>Tell us about your vehicle</h1>
+
+    <label>Model year</label>
+    <input type="number" id="f-year" placeholder="2016" />
+
+    <div class="row2">
+      <div>
+        <label>Make</label>
+        <input type="text" id="f-make" placeholder="Ford" />
+      </div>
+      <div>
+        <label>Model</label>
+        <input type="text" id="f-model" placeholder="Escape" />
+      </div>
+    </div>
+
+    <label>Current mileage</label>
+    <input type="number" id="f-mileage" placeholder="155000" />
+
+    <label>Condition before this problem came up</label>
+    <div class="chip-row" data-group="condition">
+      <div class="chip" data-value="excellent">Excellent</div>
+      <div class="chip" data-value="good">Good</div>
+      <div class="chip" data-value="fair">Fair</div>
+      <div class="chip" data-value="poor">Poor</div>
+    </div>
+
+    <label>Repair history / reliability</label>
+    <div class="chip-row" data-group="reliability">
+      <div class="chip" data-value="reliable">Reliable</div>
+      <div class="chip" data-value="some_problems">Some problems</div>
+      <div class="chip" data-value="problem_vehicle">Problem vehicle</div>
+    </div>
+
+    <label>Current value of your vehicle (as-is, before this repair)</label>
+    <input type="number" id="f-value" placeholder="6000" />
+
+    <label>Remaining loan payoff on this vehicle (0 if none)</label>
+    <input type="number" id="f-loan-payoff" placeholder="0" />
+
+    <div class="error" id="err-vehicle"></div>
+    <div class="actions">
+      <span></span>
+      <button class="btn-primary" onclick="FORRA.next('vehicle')">CONTINUE</button>
+    </div>
+  </section>
+
+  <!-- Step: Repair -->
+  <section class="step" id="step-repair">
+    <div class="progress">STEP 2 OF 5</div>
+    <h1>What did the shop tell you?</h1>
+
+    <label>Total repair estimate</label>
+    <input type="number" id="f-repair-cost" placeholder="4000" />
+
+    <label>What's being repaired?</label>
+    <input type="text" id="f-repair-desc" placeholder="Suspension work" />
+
+    <label>Other repairs in the last 12 months (0 if none)</label>
+    <input type="number" id="f-recent-repairs" placeholder="0" />
+
+    <div class="error" id="err-repair"></div>
+    <div class="actions">
+      <button class="btn-back" onclick="FORRA.back('vehicle')">Back</button>
+      <button class="btn-primary" onclick="FORRA.next('repair')">CONTINUE</button>
+    </div>
+  </section>
+
+  <!-- Step: Replacement -->
+  <section class="step" id="step-replacement">
+    <div class="progress">STEP 3 OF 5</div>
+    <h1>What would replacing it cost?</h1>
+
+    <label>Expected purchase price of a replacement</label>
+    <input type="number" id="f-replacement-price" placeholder="22000" />
+
+    <label>Trade-in or sale value of your current vehicle (0 if keeping it)</label>
+    <input type="number" id="f-trade-value" placeholder="2500" />
+
+    <div class="error" id="err-replacement"></div>
+    <div class="actions">
+      <button class="btn-back" onclick="FORRA.back('repair')">Back</button>
+      <button class="btn-primary" onclick="FORRA.next('replacement')">CONTINUE</button>
+    </div>
+  </section>
+
+  <!-- Step: Costs -->
+  <section class="step" id="step-costs">
+    <div class="progress">STEP 4 OF 5</div>
+    <h1>The real cost to replace</h1>
+    <div class="helper">We've pre-filled typical estimates — adjust for your state and dealer.</div>
+
+    <label>Sales tax</label>
+    <input type="number" id="f-sales-tax" />
+
+    <label>Title / registration</label>
+    <input type="number" id="f-title" />
+
+    <label>Dealer documentation fee</label>
+    <input type="number" id="f-doc-fee" />
+
+    <label>Delivery / transportation (0 if none)</label>
+    <input type="number" id="f-delivery" placeholder="0" />
+
+    <label>Other dealer fees (0 if none)</label>
+    <input type="number" id="f-other-fees" placeholder="0" />
+
+    <div class="actions">
+      <button class="btn-back" onclick="FORRA.back('replacement')">Back</button>
+      <button class="btn-primary" onclick="FORRA.next('costs')">CONTINUE</button>
+    </div>
+  </section>
+
+  <!-- Step: Financing -->
+  <section class="step" id="step-financing">
+    <div class="progress">STEP 5 OF 5</div>
+    <h1>How would you pay for it?</h1>
+
+    <div class="chip-row" data-group="finance-method">
+      <div class="chip" data-value="cash">Cash</div>
+      <div class="chip" data-value="finance">Finance</div>
+    </div>
+
+    <div id="finance-fields" style="display:none;">
+      <label>Down payment</label>
+      <input type="number" id="f-down-payment" placeholder="0" />
+
+      <label>Interest rate (APR %)</label>
+      <input type="number" id="f-interest-rate" placeholder="7.5" step="0.1" />
+
+      <label>Loan term (months)</label>
+      <input type="number" id="f-loan-term" placeholder="60" />
+    </div>
+
+    <div class="error" id="err-financing"></div>
+    <div class="actions">
+      <button class="btn-back" onclick="FORRA.back('costs')">Back</button>
+      <button class="btn-primary" onclick="FORRA.computeAndShowPaywall()">SEE MY OPTIONS</button>
+    </div>
+  </section>
+
+  <!-- Step: Paywall -->
+  <section class="step" id="step-paywall">
+    <div class="eyebrow">We've run the numbers</div>
+    <h1>Choose how you'd like your answer</h1>
+
+    <div class="paywall-option">
+      <h3>Just the recommendation</h3>
+      <p>Fix, get another quote, replace, or too close to call — with the key numbers behind it, right on this page.</p>
+      <button class="btn-primary" onclick="FORRA.checkout('decision')"><span class="price">$0.99</span> — GET MY ANSWER</button>
+    </div>
+
+    <div class="paywall-option">
+      <h3>Full report, emailed to you</h3>
+      <p>Everything above, plus a detailed PDF report — your repair threshold, the full cost breakdown, and the reasoning — emailed so you can share it or refer back to it.</p>
+      <button class="btn-primary" onclick="FORRA.checkout('full')"><span class="price">$1.99</span> — GET MY FULL REPORT</button>
+    </div>
+
+    <div class="error" id="err-paywall"></div>
+    <button class="btn-back" onclick="FORRA.back('financing')">Back</button>
+  </section>
+
+  <!-- Step: Verifying (brief, shown right after returning from Stripe) -->
+  <section class="step" id="step-verifying">
+    <p>Confirming your payment…</p>
+  </section>
+
+  <!-- Step: Result -->
+  <section class="step" id="step-result">
+    <div class="eyebrow">Your recommendation</div>
+    <h1 id="result-vehicle-label"></h1>
+
+    <div class="verdict">
+      <span class="dot" id="result-dot"></span>
+      <p id="result-verdict"></p>
+    </div>
+
+    <p id="result-explanation"></p>
+
+    <div class="result-card">
+      <div class="estimate-row"><span>Repair (fix)</span><span class="value" id="result-fix-cost"></span></div>
+      <div class="estimate-row total"><span>Net cost to replace</span><span class="value" id="result-replace-cost"></span></div>
+    </div>
+
+    <div id="full-report-block" style="display:none; margin-top: 24px;">
+      <h2 style="font-size: 18px;">Email me the full PDF report</h2>
+      <div class="email-form">
+        <input type="email" id="f-report-email" placeholder="you@example.com" />
+        <button class="btn-primary" onclick="FORRA.sendReport()">SEND REPORT</button>
+      </div>
+      <div id="report-status" class="success-note" style="display:none;"></div>
+      <div id="report-error" class="error"></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="calc.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
