@@ -60,13 +60,7 @@ workflows:
           echo "Using profile '$PROFILE_NAME' from team $TEAM_ID"
 
           EXPORT_PLIST="$HOME/custom_export_options.plist"
-          cat > "$EXPORT_PLIST" <<PLIST
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict/>
-          </plist>
-          PLIST
+          plutil -create xml1 "$EXPORT_PLIST"
           /usr/libexec/PlistBuddy -c "Add :method string app-store-connect" "$EXPORT_PLIST"
           /usr/libexec/PlistBuddy -c "Add :teamID string $TEAM_ID" "$EXPORT_PLIST"
           /usr/libexec/PlistBuddy -c "Add :signingStyle string manual" "$EXPORT_PLIST"
@@ -74,8 +68,15 @@ workflows:
           /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:$BUNDLE_ID string $PROFILE_NAME" "$EXPORT_PLIST"
       - name: Build ipa for distribution
         script: |
+          # Derive both from the app's own .xcodeproj rather than parsing
+          # `xcodebuild -list`'s scheme listing -- that listing also includes
+          # every CocoaPods dependency's own shared scheme (e.g. "AppAuth"),
+          # sorted alphabetically ahead of the app's own scheme name, so a
+          # naive "first non-Pods line" pick grabbed a dependency instead of
+          # the app.
           WORKSPACE=$(find "$CM_BUILD_DIR/app/ios" -maxdepth 1 -name "*.xcworkspace" | head -1)
-          SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list | awk '/Schemes:/{flag=1;next}/^[^ ]/{flag=0}flag' | sed 's/^ *//' | grep -v Pods | head -1)
+          PROJECT=$(find "$CM_BUILD_DIR/app/ios" -maxdepth 1 -name "*.xcodeproj" | head -1)
+          SCHEME=$(basename "$PROJECT" .xcodeproj)
           echo "Building workspace=$WORKSPACE scheme=$SCHEME"
           xcode-project build-ipa --workspace "$WORKSPACE" --scheme "$SCHEME" --export-options-plist "$HOME/custom_export_options.plist"
     artifacts:
