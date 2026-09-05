@@ -60,12 +60,14 @@ workflows:
           echo "Using profile '$PROFILE_NAME' from team $TEAM_ID"
 
           EXPORT_PLIST="$HOME/custom_export_options.plist"
-          plutil -create xml1 "$EXPORT_PLIST"
-          /usr/libexec/PlistBuddy -c "Add :method string app-store-connect" "$EXPORT_PLIST"
-          /usr/libexec/PlistBuddy -c "Add :teamID string $TEAM_ID" "$EXPORT_PLIST"
-          /usr/libexec/PlistBuddy -c "Add :signingStyle string manual" "$EXPORT_PLIST"
-          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" "$EXPORT_PLIST"
-          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:$BUNDLE_ID string $PROFILE_NAME" "$EXPORT_PLIST"
+          # Write with Python's plistlib -- the same library xcode-project's
+          # own Python code uses to read this file back, so there is no
+          # format mismatch to chase. A single-line -c avoids a heredoc's
+          # YAML-inherited indentation, which a multi-line Python script
+          # (top-level statements must start at column 0) cannot tolerate.
+          # Values are passed as argv, not interpolated into the source.
+          python3 -c 'import plistlib, sys; path, team_id, profile_name, bundle_id = sys.argv[1:5]; open(path, "wb").write(plistlib.dumps({"method": "app-store-connect", "teamID": team_id, "signingStyle": "manual", "provisioningProfiles": {bundle_id: profile_name}}))' "$EXPORT_PLIST" "$TEAM_ID" "$PROFILE_NAME" "$BUNDLE_ID"
+          cat "$EXPORT_PLIST"
       - name: Build ipa for distribution
         script: |
           # Derive both from the app's own .xcodeproj rather than parsing
