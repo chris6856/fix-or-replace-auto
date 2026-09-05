@@ -31,6 +31,12 @@ export function extractVinCandidate(rawText: string): string | null {
   return matches?.[0] ?? null;
 }
 
+/** Whole-string check for manual entry -- rejects I/O/Q before ever calling
+ *  NHTSA, instead of surfacing a confusing decode error for them. */
+export function isValidVinFormat(vin: string): boolean {
+  return /^[A-HJ-NPR-Z0-9]{17}$/.test(vin.toUpperCase());
+}
+
 /**
  * Decodes a VIN via NHTSA's free, public vPIC API. Called directly from the
  * app rather than through a backend proxy -- there's no CORS restriction on
@@ -54,12 +60,12 @@ export async function decodeVin(vin: string): Promise<DecodedVehicle> {
   const body = (await response.json()) as NhtsaResponse;
   const byVariable = new Map(body.Results.map((r) => [r.Variable, valueOrNull(r.Value)]));
 
-  const errorCode = byVariable.get('Error Code');
-  if (errorCode && errorCode !== '0') {
-    const errorText = byVariable.get('Error Text') ?? 'This VIN could not be decoded.';
-    throw new VinDecodeError(errorText);
-  }
-
+  // NHTSA's "Error Code" is often a non-fatal warning (most commonly "1":
+  // the check digit doesn't calculate properly) even for real, correctly
+  // decoded VINs -- this hits hand-typed VINs disproportionately, since a
+  // single transposed digit can trip the check-digit math without actually
+  // being wrong. Whether the decode is usable is decided below by whether
+  // year/make/model actually came back, not by this warning code.
   const year = parseInt(byVariable.get('Model Year') ?? '', 10);
   const make = titleCase(byVariable.get('Make'));
   const model = byVariable.get('Model');

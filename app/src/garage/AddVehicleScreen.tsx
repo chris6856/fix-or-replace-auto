@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
-import { decodeVin, VinDecodeError } from './vinDecode';
+import { decodeVin, isValidVinFormat, VinDecodeError } from './vinDecode';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'AddVehicle'>;
 
@@ -19,6 +19,10 @@ export default function AddVehicleScreen({ navigation, route }: Props) {
 
   async function handleDecodeVin() {
     setError(null);
+    if (!isValidVinFormat(vin.trim())) {
+      setError("That doesn't look like a valid VIN -- check for typos (VINs never contain I, O, or Q).");
+      return;
+    }
     setIsDecoding(true);
     try {
       const decoded = await decodeVin(vin);
