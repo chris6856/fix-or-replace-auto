@@ -46,7 +46,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    const successUrl = `${WEBSITE_BASE_URL}/estimate/?session_id={CHECKOUT_SESSION_ID}&tier=${tier}`;
+    // tier isn't included here -- app.js never reads it from the URL, since
+    // the tier used to render the result is always the one Stripe itself
+    // confirms server-side (via verify-web-purchase), not a client-supplied
+    // hint. Keeping the query string to just session_id also gives
+    // Bluehost's ModSecurity (or any WAF) less to flag on the return trip.
+    const successUrl = `${WEBSITE_BASE_URL}/estimate/?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${WEBSITE_BASE_URL}/estimate/?canceled=1`;
 
     const body = new URLSearchParams();
