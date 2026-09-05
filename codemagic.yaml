@@ -42,7 +42,10 @@ workflows:
           keychain add-certificates
       - name: Set up code signing on the Xcode project
         script: |
-          xcode-project use-profiles
+          # Xcode's export options schema renamed the "app-store" method to
+          # "app-store-connect" -- use-profiles still defaults to the old
+          # name, which newer Xcode rejects outright during export.
+          xcode-project use-profiles --custom-export-options '{"method": "app-store-connect"}'
       - name: Build ipa for distribution
         script: |
           WORKSPACE=$(find "$CM_BUILD_DIR/app/ios" -maxdepth 1 -name "*.xcworkspace" | head -1)
