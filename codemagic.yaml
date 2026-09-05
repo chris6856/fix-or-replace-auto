@@ -60,7 +60,7 @@ workflows:
           # "Error Reading File" strings as the team ID / profile name.
           PROFILE_PATH=$(find "$HOME/Library/MobileDevice/Provisioning Profiles" -name "*.mobileprovision" | head -1)
           DECODED_PROFILE="$HOME/decoded_profile.plist"
-          security cms -D -i "$PROFILE_PATH" -o "$DECODED_PROFILE"
+          security cms -D -i "$PROFILE_PATH" > "$DECODED_PROFILE"
           PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" "$DECODED_PROFILE")
           TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" "$DECODED_PROFILE")
           echo "Using profile '$PROFILE_NAME' from team $TEAM_ID"
@@ -72,7 +72,7 @@ workflows:
           # YAML-inherited indentation, which a multi-line Python script
           # (top-level statements must start at column 0) cannot tolerate.
           # Values are passed as argv, not interpolated into the source.
-          python3 -c 'import plistlib, sys; path, team_id, profile_name, bundle_id = sys.argv[1:5]; open(path, "wb").write(plistlib.dumps({"method": "app-store-connect", "teamID": team_id, "signingStyle": "manual", "provisioningProfiles": {bundle_id: profile_name}}))' "$EXPORT_PLIST" "$TEAM_ID" "$PROFILE_NAME" "$BUNDLE_ID"
+          python3 -c 'import plistlib, sys; path, team_id, profile_name, bundle_id = sys.argv[1:5]; open(path, "wb").write(plistlib.dumps({"method": "app-store-connect", "teamID": team_id, "signingStyle": "manual", "signingCertificate": "Apple Distribution", "provisioningProfiles": {bundle_id: profile_name}}))' "$EXPORT_PLIST" "$TEAM_ID" "$PROFILE_NAME" "$BUNDLE_ID"
           cat "$EXPORT_PLIST"
       - name: Build ipa for distribution
         script: |
