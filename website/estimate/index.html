@@ -6,7 +6,7 @@
 <title>Get Your Recommendation — Fix or Replace Auto</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700;8..60,800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <style>
   :root {
     --ink: #14181C; --ink-soft: #3A4248; --paper: #F4F6F5; --panel: #E7EBEA;
@@ -17,12 +17,12 @@
   * { box-sizing: border-box; }
   body {
     margin: 0; background: var(--paper); color: var(--ink);
-    font-family: 'IBM Plex Mono', monospace; line-height: 1.5;
+    font-family: 'Montserrat', sans-serif; line-height: 1.5;
   }
-  h1, h2, .serif { font-family: 'Source Serif 4', Georgia, serif; }
+  h1, h2, .serif { font-family: 'Montserrat', sans-serif; }
   a { color: inherit; }
   .top { padding: 20px 24px; border-bottom: 1px solid var(--panel-line); }
-  .brand { font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 19px; text-decoration: none; }
+  .brand { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 19px; text-decoration: none; }
   .wrap { max-width: 620px; margin: 0 auto; padding: 40px 24px 80px; }
   .eyebrow { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--steel); }
   h1 { font-size: clamp(1.7rem, 4vw, 2.2rem); margin: 6px 0 28px; }
@@ -43,14 +43,14 @@
   .chip.selected { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .actions { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; }
   .btn-primary {
-    font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 17px;
+    font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 17px;
     color: var(--paper); background: var(--ink); border: none; border-radius: 5px;
     padding: 13px 26px; cursor: pointer; text-decoration: none; display: inline-block;
   }
   .btn-primary:hover { background: var(--amber-ink); }
   .btn-primary:disabled { opacity: 0.4; cursor: default; }
   .btn-secondary {
-    font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 17px;
+    font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 17px;
     color: var(--ink); background: #fff; border: 1px solid var(--panel-line); border-radius: 5px;
     padding: 13px 26px; cursor: pointer;
   }
@@ -72,13 +72,13 @@
   }
   .paywall-option h3 { margin: 0 0 6px; font-size: 19px; }
   .paywall-option p { margin: 0 0 14px; color: var(--ink-soft); font-size: 14.5px; }
-  .price { font-family: 'Source Serif 4', Georgia, serif; font-weight: 800; font-size: 15px; }
+  .price { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 15px; }
 
   .verdict { display: flex; align-items: center; gap: 10px; background: var(--green-tint); border-radius: 6px; padding: 14px 16px; margin: 18px 0; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
   .verdict p { margin: 0; font-size: 16px; }
   .estimate-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--panel-line); font-size: 14.5px; }
-  .estimate-row .value { font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; }
+  .estimate-row .value { font-family: 'Montserrat', sans-serif; font-weight: 700; }
   .estimate-row.total { border-top: 1px solid var(--ink); border-bottom: none; margin-top: 6px; padding-top: 12px; }
 
   .email-form { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
