@@ -27,6 +27,8 @@ export interface PurchaseResult {
 interface PurchaseLike {
   productId: string;
   purchaseToken?: string | null;
+  store?: string;
+  transactionId?: string | null;
 }
 
 /**
@@ -57,9 +59,20 @@ async function verifyAndConsume(
     return { success: false, error: 'Purchase completed but no purchase token was returned.' };
   }
 
+  // store tells the backend whether to verify against Google's Android
+  // Publisher API or Apple's App Store Server API -- purchaseToken alone
+  // isn't enough to tell (an Apple JWS and a Google purchase token are
+  // both just opaque strings from the app's point of view).
   const { data, error } = await supabase.functions.invoke<{ verified: boolean; error?: string }>(
     'verify-purchase',
-    { body: { productId, purchaseToken: purchase.purchaseToken } },
+    {
+      body: {
+        productId,
+        purchaseToken: purchase.purchaseToken,
+        store: purchase.store,
+        transactionId: purchase.transactionId,
+      },
+    },
   );
 
   if (error || !data || !data.verified) {
@@ -118,7 +131,13 @@ export async function purchaseProduct(productId: ProductId): Promise<PurchaseRes
         });
 
         requestPurchase({
-          request: { google: { skus: [productId] } },
+          // Both platform blocks are supplied -- react-native-iap picks
+          // whichever matches the running platform. The Android side
+          // (google) was already working; iOS needs "apple" with a
+          // singular "sku" string, not "google"'s array-of-skus shape --
+          // omitting it entirely is what caused "the sku property is
+          // required" on iOS.
+          request: { google: { skus: [productId] }, apple: { sku: productId } },
           type: 'in-app',
         }).catch((err: unknown) => {
           updateSub.remove();
