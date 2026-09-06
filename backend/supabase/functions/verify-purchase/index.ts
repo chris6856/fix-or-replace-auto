@@ -236,11 +236,14 @@ async function verifyApplePurchase(
   const jwt = await getAppleJwt();
 
   // Try production first, then fall back to the sandbox environment --
-  // TestFlight and sandbox-tester purchases only exist in sandbox, and
-  // Apple's own guidance is to attempt production first and retry against
-  // sandbox on a not-found response rather than trying to guess up front.
+  // TestFlight and sandbox-tester purchases only exist in sandbox. Falls
+  // back on ANY non-2xx production response, not just 404: confirmed via
+  // direct testing that this app's production App Store Server API
+  // access returns a bare 401 (not 404) for every request until the app
+  // has a production release, so gating the fallback on 404 alone would
+  // never actually reach sandbox during pre-release TestFlight testing.
   let response = await fetchAppleTransaction(transactionId, jwt, 'https://api.storekit.itunes.apple.com');
-  if (response.status === 404) {
+  if (!response.ok) {
     response = await fetchAppleTransaction(transactionId, jwt, 'https://api.storekit-sandbox.itunes.apple.com');
   }
 
