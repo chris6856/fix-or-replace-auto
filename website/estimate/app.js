@@ -8,6 +8,12 @@
 
   var chipState = { condition: null, reliability: null, 'finance-method': null };
 
+  // Stripe returns the session ID in the URL fragment (#), not a query
+  // string, so a host's WAF never sees it (see create-web-checkout for why).
+  function getHashParams() {
+    return new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  }
+
   function show(stepId) {
     document.querySelectorAll('.step').forEach(function (el) {
       el.classList.remove('active');
@@ -217,7 +223,7 @@
     }
 
     var pending = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || 'null');
-    var sessionId = new URLSearchParams(window.location.search).get('session_id');
+    var sessionId = getHashParams().get('session_id');
     if (!pending || !sessionId) {
       errorEl.textContent = 'Your session expired -- please start over.';
       return;
@@ -255,7 +261,7 @@
   }
 
   function handleReturnFromStripe() {
-    var params = new URLSearchParams(window.location.search);
+    var params = getHashParams();
     var sessionId = params.get('session_id');
     var canceled = params.get('canceled');
 
