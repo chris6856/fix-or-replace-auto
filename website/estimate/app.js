@@ -307,12 +307,28 @@
       });
   }
 
+  function exitSite() {
+    window.close();
+    // window.close() is silently ignored by the browser for any tab that
+    // wasn't opened via window.open() from a script -- which this one
+    // wasn't, since the visitor navigated here normally. There's no way to
+    // detect that refusal, so fall back to a plain sign-off after a beat
+    // instead of a button that otherwise looks like it did nothing.
+    setTimeout(function () {
+      document.body.innerHTML =
+        '<div style="max-width:480px;margin:100px auto;text-align:center;padding:0 24px;">' +
+        '<p style="font-size:16px;">You can close this tab now. Thanks for using Fix or Replace Auto.</p>' +
+        '</div>';
+    }, 300);
+  }
+
   window.FORRA = {
     next: next,
     back: back,
     computeAndShowPaywall: computeAndShowPaywall,
     checkout: checkout,
     sendReport: sendReport,
+    exitSite: exitSite,
   };
 
   handleReturnFromStripe();
