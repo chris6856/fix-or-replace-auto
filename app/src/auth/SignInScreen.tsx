@@ -1,5 +1,17 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, ImageBackground, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuth } from './AuthContext';
 import { isAppleSignInAvailable, isGoogleSignInConfigured, signInWithApple, signInWithGoogle } from './socialSignIn';
@@ -49,7 +61,7 @@ export default function SignInScreen() {
 
   if (confirmationSentTo) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, styles.centeredPadded]}>
         <Text style={styles.title}>Check Your Email</Text>
         <Text style={styles.confirmationText}>
           We sent a confirmation link to {confirmationSentTo}. Tap it, then come back here and sign in.
@@ -68,12 +80,14 @@ export default function SignInScreen() {
   }
 
   return (
+    <KeyboardAvoidingView style={styles.flexFill} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ImageBackground
       source={require('../../assets/welcome-background.jpg')}
       style={styles.container}
       imageStyle={styles.backgroundImage}
       resizeMode="cover"
     >
+    <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
       <Pressable onPress={() => setMode(mode === 'signUp' ? 'signIn' : 'signUp')}>
         <Text style={styles.switchModeTextTop}>
           {mode === 'signUp' ? 'Already have an account? Sign in' : "Don't have an account? Create one"}
@@ -131,12 +145,17 @@ export default function SignInScreen() {
       </Pressable>
 
       <Text style={styles.disclaimer}>Your vehicles and repair decisions will be saved securely to your account.</Text>
+    </ScrollView>
     </ImageBackground>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#fff' },
+  flexFill: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#fff' },
+  centeredPadded: { justifyContent: 'center', padding: 24 },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 24 },
   // Faded well below full opacity, matching the Welcome screen, so the
   // photo reads as mood/texture behind the form rather than content.
   backgroundImage: { opacity: 0.26 },

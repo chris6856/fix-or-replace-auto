@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useDecisionDraft } from './DecisionDraftContext';
@@ -55,8 +55,8 @@ export default function ReplacementCostsScreen({ navigation }: Props) {
   }
 
   return (
-    <View style={styles.outer}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <KeyboardAvoidingView style={styles.outer} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>REAL COST TO REPLACE</Text>
 
         <View style={styles.row}>
@@ -125,7 +125,7 @@ export default function ReplacementCostsScreen({ navigation }: Props) {
           <Text style={styles.primaryButtonText}>CONTINUE</Text>
         </Pressable>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

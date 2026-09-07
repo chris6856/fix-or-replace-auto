@@ -3,7 +3,9 @@ import {
   ActivityIndicator,
   FlatList,
   ImageBackground,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -94,7 +96,7 @@ export default function GarageScreen({ navigation }: Props) {
         animationType="fade"
         onRequestClose={() => setIsResearchModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Research Repair Facility</Text>
             <Text style={styles.modalHelper}>What's the name of the repair shop?</Text>
@@ -114,7 +116,7 @@ export default function GarageScreen({ navigation }: Props) {
               </Pressable>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </ImageBackground>
   );

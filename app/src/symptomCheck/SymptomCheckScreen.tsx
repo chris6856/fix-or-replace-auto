@@ -1,5 +1,15 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useVehicle } from '../garage/useVehicles';
@@ -49,7 +59,8 @@ export default function SymptomCheckScreen({ route, navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>WHAT DID YOU NOTICE?</Text>
       <Text style={styles.subtitle}>
         Describe a sound, feeling, smell, or warning light. We'll suggest possible causes to ask a mechanic about --
@@ -70,12 +81,14 @@ export default function SymptomCheckScreen({ route, navigation }: Props) {
       <Pressable style={styles.primaryButton} onPress={handleCheck} disabled={isChecking || !vehicle}>
         {isChecking ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>CHECK SYMPTOM</Text>}
       </Pressable>
-    </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#fff' },
+  content: { padding: 20, paddingBottom: 40 },
   title: { fontSize: 20, fontWeight: '800', marginBottom: 8 },
   subtitle: { fontSize: 14, color: '#666', lineHeight: 20, marginBottom: 20 },
   input: {

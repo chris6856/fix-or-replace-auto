@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useDecisionDraft } from './DecisionDraftContext';
@@ -72,7 +82,8 @@ export default function CurrentValueScreen({ navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>YOUR VEHICLE TODAY</Text>
       {vehicle && (
         <Text style={styles.subtitle}>
@@ -124,12 +135,14 @@ export default function CurrentValueScreen({ navigation }: Props) {
       <Pressable style={styles.primaryButton} onPress={handleContinue} disabled={parsedValue <= 0}>
         <Text style={styles.primaryButtonText}>CONTINUE</Text>
       </Pressable>
-    </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#fff' },
+  content: { padding: 20, paddingBottom: 40 },
   title: { fontSize: 20, fontWeight: '800', marginBottom: 4 },
   subtitle: { fontSize: 15, color: '#555' },
   mileage: { fontSize: 15, color: '#555', marginBottom: 20 },

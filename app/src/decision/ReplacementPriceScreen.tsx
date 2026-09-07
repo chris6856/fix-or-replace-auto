@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useDecisionDraft, type DecisionDraft } from './DecisionDraftContext';
@@ -50,7 +50,8 @@ export default function ReplacementPriceScreen({ navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>REPLACEMENT VEHICLE</Text>
 
       <Text style={styles.sectionLabel}>Cost of Replacement Vehicle</Text>
@@ -89,12 +90,14 @@ export default function ReplacementPriceScreen({ navigation }: Props) {
       <Pressable style={styles.primaryButton} onPress={handleContinue}>
         <Text style={styles.primaryButtonText}>CONTINUE</Text>
       </Pressable>
-    </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#fff' },
+  content: { padding: 20, paddingBottom: 40 },
   title: { fontSize: 20, fontWeight: '800', marginBottom: 20 },
   sectionLabel: { fontSize: 13, fontWeight: '700', color: '#666', marginTop: 16, marginBottom: 8 },
   input: {

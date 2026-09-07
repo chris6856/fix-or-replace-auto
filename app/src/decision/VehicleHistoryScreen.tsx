@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { ReliabilityBucket } from '@fixorreplace/types';
 import type { AppStackParamList } from '../navigation/RootNavigator';
@@ -55,7 +55,8 @@ export default function VehicleHistoryScreen({ navigation }: Props) {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>HOW HAS THIS VEHICLE BEEN?</Text>
       <Text style={styles.subtitle}>Other than this repair:</Text>
 
@@ -113,12 +114,14 @@ export default function VehicleHistoryScreen({ navigation }: Props) {
       <Pressable style={styles.primaryButton} onPress={handleContinue}>
         <Text style={styles.primaryButtonText}>CONTINUE</Text>
       </Pressable>
-    </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#fff' },
+  content: { padding: 20, paddingBottom: 40 },
   title: { fontSize: 20, fontWeight: '800', marginBottom: 4 },
   subtitle: { fontSize: 14, color: '#666', marginBottom: 16 },
   recordedNote: { fontSize: 13, color: '#555', marginBottom: 8, lineHeight: 18 },

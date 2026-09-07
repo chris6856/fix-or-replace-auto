@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { amortize } from '@fixorreplace/calc-engine';
 import type { AppStackParamList } from '../navigation/RootNavigator';
@@ -43,7 +43,8 @@ export default function FinancingScreen({ navigation }: Props) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>HOW WOULD YOU PAY?</Text>
 
       <View style={styles.optionsRow}>
@@ -109,6 +110,7 @@ export default function FinancingScreen({ navigation }: Props) {
         <Text style={styles.primaryButtonText}>COMPARE</Text>
       </Pressable>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
