@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
@@ -94,13 +95,18 @@ async function verifyAndConsume(
  * paid for" -- never trust the client's own claim), and consumes the
  * product on success so it can be bought again for a future decision.
  *
- * If a previous attempt got the purchase from Google but then failed
- * before consuming it (a dropped connection, verify-purchase erroring,
- * app killed mid-flow), Play now considers the product "already owned"
- * and refuses a fresh purchase -- requestPurchase surfaces that as an
- * AlreadyOwned error. Recovered here by looking up that leftover
- * purchase via getAvailablePurchases and running it through the same
+ * If a previous attempt got the purchase from the store but then failed
+ * before consuming/finishing it (a dropped connection, verify-purchase
+ * erroring, app killed mid-flow), the store now considers the product
+ * "already owned" and refuses a fresh purchase -- requestPurchase
+ * surfaces that as an AlreadyOwned error. Recovered here by looking up
+ * that leftover purchase and running it through the same
  * verify-and-consume path, rather than leaving the user stuck.
+ *
+ * Where to look for the leftover differs by platform: getAvailablePurchases
+ * surfaces Google Play's unconsumed purchases directly, but on iOS a
+ * stuck/unfinished CONSUMABLE transaction lives in StoreKit's separate
+ * pending-transactions queue instead, so that's checked too.
  */
 export async function purchaseProduct(productId: ProductId): Promise<PurchaseResult> {
   let iap: Awaited<ReturnType<typeof loadIAP>>;
@@ -150,11 +156,17 @@ export async function purchaseProduct(productId: ProductId): Promise<PurchaseRes
       if (code !== 'already-owned') throw err;
 
       const owned = await iap.getAvailablePurchases();
-      const leftover = owned.find((p) => p.productId === productId);
+      let leftover = owned.find((p) => p.productId === productId);
+
+      if (!leftover && Platform.OS === 'ios') {
+        const pending = await iap.getPendingTransactionsIOS();
+        leftover = pending.find((p) => p.productId === productId);
+      }
+
       if (!leftover) {
         return {
           success: false,
-          error: 'Google Play says this is already purchased, but no pending purchase could be found to recover.',
+          error: 'This purchase is already owned, but nothing pending could be found to recover it. Try again shortly.',
         };
       }
       purchase = leftover;
