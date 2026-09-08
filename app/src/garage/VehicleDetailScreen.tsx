@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
 import type { AppStackParamList } from '../navigation/RootNavigator';
-import { useUpdateVehiclePhoto, useVehicle } from './useVehicles';
+import { useDeleteVehicle, useUpdateVehiclePhoto, useVehicle } from './useVehicles';
 import { useDecisionDraft } from '../decision/DecisionDraftContext';
 import { useDecisionHistory, type DecisionHistoryItem } from '../decision/decisionHistory';
 import { recommendationLabel } from '../decision/RecommendationBadge';
@@ -24,6 +24,7 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
   const { startDraft } = useDecisionDraft();
   const queryClient = useQueryClient();
   const updateVehiclePhoto = useUpdateVehiclePhoto();
+  const deleteVehicle = useDeleteVehicle();
   const [isPickingPhoto, setIsPickingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
 
@@ -94,7 +95,8 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
     );
   }
 
-  const { year: vehicleYear, currentMileage } = vehicle;
+  const { year: vehicleYear, make, model, nickname, currentMileage } = vehicle;
+  const vehicleLabel = nickname ?? `${vehicleYear} ${make} ${model}`;
   function handleStartRepairIntake() {
     startDraft(vehicleId, vehicleYear, currentMileage);
     navigation.navigate('MileageCheck');
@@ -102,6 +104,28 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
 
   function handleCheckSymptom() {
     navigation.navigate('SymptomCheck', { vehicleId });
+  }
+
+  function handleDeleteVehicle() {
+    Alert.alert(
+      'Delete this vehicle?',
+      `This permanently removes ${vehicleLabel} and all of its saved decisions and symptom checks. This can't be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Vehicle',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteVehicle.mutateAsync(vehicleId);
+              navigation.goBack();
+            } catch (err) {
+              Alert.alert("Couldn't delete", err instanceof Error ? err.message : 'Something went wrong.');
+            }
+          },
+        },
+      ],
+    );
   }
 
   return (
@@ -156,6 +180,14 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
           ))}
         </View>
       )}
+
+      <Pressable style={styles.deleteVehicleButton} onPress={handleDeleteVehicle} disabled={deleteVehicle.isPending}>
+        {deleteVehicle.isPending ? (
+          <ActivityIndicator size="small" color="#c62828" />
+        ) : (
+          <Text style={styles.deleteVehicleButtonText}>DELETE THIS VEHICLE</Text>
+        )}
+      </Pressable>
     </ScrollView>
   );
 }
@@ -281,4 +313,14 @@ const styles = StyleSheet.create({
   decisionCost: { fontSize: 14, color: '#333' },
   decisionRecommendation: { fontSize: 13, fontWeight: '700' },
   symptomTopCause: { fontSize: 13, color: '#555', marginTop: 6 },
+  deleteVehicleButton: {
+    marginTop: 40,
+    height: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#c62828',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteVehicleButtonText: { fontSize: 13, fontWeight: '700', color: '#c62828' },
 });

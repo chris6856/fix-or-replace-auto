@@ -32,23 +32,32 @@ interface PurchaseLike {
   transactionId?: string | null;
 }
 
+interface VerifyPurchaseResponse {
+  verified: boolean;
+  error?: string;
+  /** Set when this exact transaction was already verified once before
+   *  (see verify-purchase's duplicate-key handling) -- almost always
+   *  because finishTransaction never ran after that first successful
+   *  verification, not a genuine replay attempt. */
+  alreadyUsed?: boolean;
+}
+
 /**
  * supabase-js's own error.message for a non-2xx Edge Function response is
  * always the generic "Edge Function returned a non-2xx status code" --
- * the actual JSON body (with our specific error text) is on
- * error.context, a Response, and has to be read separately. See the
- * FunctionsHttpError JSDoc example in @supabase/functions-js.
+ * the actual JSON body (with our specific error text and alreadyUsed
+ * flag) is on error.context, a Response, and has to be read separately.
+ * See the FunctionsHttpError JSDoc example in @supabase/functions-js.
  */
-async function extractInvokeErrorMessage(error: unknown): Promise<string | null> {
+async function extractInvokeErrorBody(error: unknown): Promise<VerifyPurchaseResponse | null> {
   if (error instanceof FunctionsHttpError) {
     try {
-      const body = (await error.context.json()) as { error?: string };
-      if (body?.error) return body.error;
+      return (await error.context.json()) as VerifyPurchaseResponse;
     } catch {
-      // response wasn't JSON -- fall through to the generic message
+      // response wasn't JSON
     }
   }
-  return error instanceof Error ? error.message : null;
+  return null;
 }
 
 async function verifyAndConsume(
@@ -64,20 +73,29 @@ async function verifyAndConsume(
   // Publisher API or Apple's App Store Server API -- purchaseToken alone
   // isn't enough to tell (an Apple JWS and a Google purchase token are
   // both just opaque strings from the app's point of view).
-  const { data, error } = await supabase.functions.invoke<{ verified: boolean; error?: string }>(
-    'verify-purchase',
-    {
-      body: {
-        productId,
-        purchaseToken: purchase.purchaseToken,
-        store: purchase.store,
-        transactionId: purchase.transactionId,
-      },
+  const { data, error } = await supabase.functions.invoke<VerifyPurchaseResponse>('verify-purchase', {
+    body: {
+      productId,
+      purchaseToken: purchase.purchaseToken,
+      store: purchase.store,
+      transactionId: purchase.transactionId,
     },
-  );
+  });
 
-  if (error || !data || !data.verified) {
-    const message = data?.error ?? (await extractInvokeErrorMessage(error)) ?? 'Could not verify this purchase.';
+  const result = data ?? (error ? await extractInvokeErrorBody(error) : null);
+
+  if (!result?.verified) {
+    if (result?.alreadyUsed) {
+      // This exact transaction was already verified successfully once
+      // before -- finishTransaction just never ran after that (a crash,
+      // a dropped connection), leaving it stuck in the store's pending
+      // queue forever. The entitlement was already granted then, so
+      // finish it now to clear the queue and let the user buy again,
+      // rather than treating this as a failure with no way out.
+      await iap.finishTransaction({ purchase: purchase as never, isConsumable: true });
+      return { success: true };
+    }
+    const message = result?.error ?? (error instanceof Error ? error.message : null) ?? 'Could not verify this purchase.';
     return { success: false, error: message };
   }
 

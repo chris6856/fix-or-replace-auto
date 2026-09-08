@@ -337,10 +337,22 @@ Deno.serve(async (req) => {
     if (!insertResponse.ok) {
       const body = await insertResponse.text();
       if (body.includes('duplicate key') || body.includes('purchases_purchase_token_key')) {
-        return new Response(JSON.stringify({ verified: false, error: 'This purchase has already been used.' }), {
-          status: 409,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        // This exact transaction was already verified and recorded once
+        // before -- almost always because finishTransaction never ran on
+        // the client that first verified it (a crash, a dropped
+        // connection), leaving it stuck in the store's pending-transaction
+        // queue. The entitlement was already granted then; alreadyUsed
+        // tells the client it's safe (and necessary) to finish/consume
+        // this transaction now rather than treating it as a hard failure,
+        // which would leave the purchase stuck forever with no way to
+        // clear it.
+        return new Response(
+          JSON.stringify({ verified: false, alreadyUsed: true, error: 'This purchase has already been used.' }),
+          {
+            status: 409,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
+        );
       }
       throw new Error(`Could not record purchase (${insertResponse.status}): ${body}`);
     }

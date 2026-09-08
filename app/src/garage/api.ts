@@ -127,6 +127,27 @@ export async function updateVehiclePhoto(id: string, photoUrl: string): Promise<
   return rowToVehicle(data as VehicleRow);
 }
 
+/**
+ * repair_events, decisions, and symptom_checks all reference vehicles
+ * with ON DELETE CASCADE, so deleting the vehicle row removes its whole
+ * history automatically. The stored photo isn't a database row (just a
+ * Storage object at {userId}/{vehicleId}.jpg -- see vehiclePhoto.ts), so
+ * it's cleaned up separately here; best-effort, since a leftover photo
+ * file is harmless and shouldn't block deleting the vehicle itself.
+ */
+export async function deleteVehicle(id: string): Promise<void> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { error } = await supabase.from('vehicles').delete().eq('id', id);
+  if (error) throw error;
+
+  if (user) {
+    await supabase.storage.from('vehicle-photos').remove([`${user.id}/${id}.jpg`]).catch(() => {});
+  }
+}
+
 export async function updateVehicleFinancials(
   id: string,
   fields: { currentLoanPayoff: number; condition: VehicleCondition; reliabilityBucket: ReliabilityBucket },
