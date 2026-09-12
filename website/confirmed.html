@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Email Confirmed — Fix or Replace Auto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #14181C; --ink-soft: #3A4248; --paper: #F4F6F5; --panel: #E7EBEA;
+    --panel-line: #D3D9D8; --steel: #4A5A63; --steel-soft: #6B7B83;
+    --amber: #C98A2E; --amber-ink: #7A4B0E; --amber-tint: #F3E2C8;
+    --green: #2F7A4F; --green-tint: #DCEBE1; --paper-rgb: 244, 246, 245;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --ink: #EDEFEE; --ink-soft: #C3CBCE; --paper: #14181A; --panel: #1D2325;
+      --panel-line: #2B3335; --steel: #9AAAB0; --steel-soft: #7A8A90;
+      --amber: #E0A94E; --amber-ink: #F3D9AE; --green: #4FA876; --green-tint: #17301F;
+      --paper-rgb: 20, 24, 26;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #EDEFEE; --ink-soft: #C3CBCE; --paper: #14181A; --panel: #1D2325;
+    --panel-line: #2B3335; --steel: #9AAAB0; --steel-soft: #7A8A90;
+    --amber: #E0A94E; --amber-ink: #F3D9AE; --green: #4FA876; --green-tint: #17301F;
+    --paper-rgb: 20, 24, 26;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Montserrat', sans-serif; line-height: 1.6; }
+  header {
+    position: sticky; top: 0; background: rgba(var(--paper-rgb), 0.9); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--panel-line); padding: 16px 28px;
+  }
+  .nav { max-width: 640px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+  .nav a { text-decoration: none; color: var(--ink); font-weight: 800; font-size: 17px; }
+  main { max-width: 480px; margin: 0 auto; padding: 90px 28px 100px; text-align: center; }
+  .badge {
+    width: 72px; height: 72px; border-radius: 50%; background: var(--green-tint);
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;
+    font-size: 34px;
+  }
+  h1 { font-weight: 800; font-size: 1.9rem; margin: 0 0 12px; }
+  p { color: var(--ink-soft); font-size: 16.5px; margin: 0 0 8px; }
+  .helper { font-size: 14px; color: var(--steel); margin-top: 24px; }
+  footer { border-top: 1px solid var(--panel-line); padding: 28px; text-align: center; }
+  .footer-links { font-size: 14.5px; }
+  .footer-links a { color: var(--steel); text-decoration: none; margin: 0 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <a href="index.html">FIX OR REPLACE AUTO</a>
+  </div>
+</header>
+
+<main>
+  <div class="badge">✅</div>
+  <h1>Your email is confirmed</h1>
+  <p>You're all set — head back to the Fix or Replace Auto app and sign in to get started.</p>
+  <p class="helper">You can close this tab now.</p>
+</main>
+
+<footer>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>
