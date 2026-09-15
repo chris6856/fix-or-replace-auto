@@ -1,4 +1,4 @@
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator, type NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { useAuth } from '../auth/AuthContext';
@@ -110,6 +110,36 @@ function SignOutButton() {
   return (
     <Pressable onPress={signOut} hitSlop={12} style={styles.cancelButton}>
       <Text style={styles.signOutButtonText}>Sign Out</Text>
+    </Pressable>
+  );
+}
+
+/**
+ * Apple requires a discoverable in-app way to start account deletion for
+ * any app that supports account creation -- a link straight to the page
+ * that actually performs it is explicitly an acceptable pattern (see
+ * Guideline 5.1.1(v)), so this opens the same delete-account.html flow
+ * the website already uses, rather than duplicating that logic natively.
+ */
+function DeleteAccountButton() {
+  function handlePress() {
+    Alert.alert(
+      'Delete your account?',
+      "This opens a webpage where you can permanently delete your account and all its data. You'll need to sign in there to confirm.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue',
+          style: 'destructive',
+          onPress: () => Linking.openURL('https://fixorreplaceauto.com/delete-account.html'),
+        },
+      ],
+    );
+  }
+
+  return (
+    <Pressable onPress={handlePress} hitSlop={12} style={styles.cancelButton}>
+      <Text style={styles.deleteAccountButtonText}>Delete Account</Text>
     </Pressable>
   );
 }
@@ -243,7 +273,15 @@ export default function RootNavigator() {
           <AppStack.Screen
             name="Garage"
             component={GarageScreen}
-            options={{ title: 'Fix or Replace Auto', headerRight: () => <SignOutButton /> }}
+            options={{
+              title: 'Fix or Replace Auto',
+              headerRight: () => (
+                <View style={styles.headerActions}>
+                  <DeleteAccountButton />
+                  <SignOutButton />
+                </View>
+              ),
+            }}
           />
           <AppStack.Screen name="AddVehicle" component={AddVehicleScreen} options={{ title: 'Add a Vehicle' }} />
           <AppStack.Screen name="ScanVin" component={ScanVinScreen} options={{ title: 'Scan VIN' }} />
@@ -384,4 +422,5 @@ const styles = StyleSheet.create({
   saveButton: { paddingHorizontal: 4, paddingVertical: 4 },
   saveButtonText: { fontSize: 15, color: '#111', fontWeight: '700' },
   signOutButtonText: { fontSize: 14, color: '#666', fontWeight: '600' },
+  deleteAccountButtonText: { fontSize: 13, color: '#c62828', fontWeight: '600' },
 });

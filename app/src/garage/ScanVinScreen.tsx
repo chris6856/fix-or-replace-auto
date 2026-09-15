@@ -88,7 +88,7 @@ export default function ScanVinScreen({ navigation }: Props) {
       <View style={styles.centered}>
         <Text style={styles.permissionText}>Camera access is needed to scan a VIN.</Text>
         <Pressable style={styles.primaryButton} onPress={requestPermission}>
-          <Text style={styles.primaryButtonText}>ALLOW CAMERA ACCESS</Text>
+          <Text style={styles.primaryButtonText}>CONTINUE</Text>
         </Pressable>
         <Pressable onPress={() => navigation.navigate('AddVehicle', undefined)}>
           <Text style={styles.linkText}>Enter VIN or vehicle details manually instead</Text>
