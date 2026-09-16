@@ -1,5 +1,11 @@
-import { createContext, useContext, useMemo, useState, type PropsWithChildren } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ReliabilityBucket, VehicleCondition } from '@fixorreplace/types';
+
+// Only one repair-vs-replace decision can be in progress at a time, so a
+// single fixed key is enough -- persisted so backing out of the app (or the
+// OS killing it) doesn't discard several minutes of typed-in answers.
+const STORAGE_KEY = '@fixorreplace/decisionDraft';
 
 /**
  * The in-progress "decision session" (build plan section 5) -- accumulates
@@ -95,6 +101,8 @@ function createEmptyDraft(vehicleId: string, vehicleYear: number, currentMileage
 
 interface DecisionDraftContextValue {
   draft: DecisionDraft | null;
+  /** True once the one-time load from disk has finished (or found nothing). */
+  isRestored: boolean;
   startDraft: (vehicleId: string, vehicleYear: number, currentMileage: number) => void;
   updateDraft: (patch: Partial<DecisionDraft>) => void;
   clearDraft: () => void;
@@ -104,16 +112,44 @@ const DecisionDraftContext = createContext<DecisionDraftContextValue | undefined
 
 export function DecisionDraftProvider({ children }: PropsWithChildren) {
   const [draft, setDraft] = useState<DecisionDraft | null>(null);
+  const [isRestored, setIsRestored] = useState(false);
+  // Guards against writing back the initial `null` state over a draft
+  // that's still being loaded from disk.
+  const hasLoadedRef = useRef(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem(STORAGE_KEY)
+      .then((raw) => {
+        if (raw) setDraft(JSON.parse(raw));
+      })
+      .catch(() => {
+        // Corrupt or unreadable draft -- just start fresh.
+      })
+      .finally(() => {
+        hasLoadedRef.current = true;
+        setIsRestored(true);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedRef.current) return;
+    if (draft) {
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(draft)).catch(() => {});
+    } else {
+      AsyncStorage.removeItem(STORAGE_KEY).catch(() => {});
+    }
+  }, [draft]);
 
   const value = useMemo<DecisionDraftContextValue>(
     () => ({
       draft,
+      isRestored,
       startDraft: (vehicleId, vehicleYear, currentMileage) =>
         setDraft(createEmptyDraft(vehicleId, vehicleYear, currentMileage)),
       updateDraft: (patch) => setDraft((prev) => (prev ? { ...prev, ...patch } : prev)),
       clearDraft: () => setDraft(null),
     }),
-    [draft],
+    [draft, isRestored],
   );
 
   return <DecisionDraftContext.Provider value={value}>{children}</DecisionDraftContext.Provider>;

@@ -21,7 +21,7 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
   const { data: vehicle, isLoading, error } = useVehicle(vehicleId);
   const { data: history } = useDecisionHistory(vehicleId);
   const { data: symptomChecks } = useSymptomChecks(vehicleId);
-  const { startDraft } = useDecisionDraft();
+  const { draft, startDraft } = useDecisionDraft();
   const queryClient = useQueryClient();
   const updateVehiclePhoto = useUpdateVehiclePhoto();
   const deleteVehicle = useDeleteVehicle();
@@ -97,8 +97,33 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
 
   const { year: vehicleYear, make, model, nickname, currentMileage } = vehicle;
   const vehicleLabel = nickname ?? `${vehicleYear} ${make} ${model}`;
+  const hasDraftForThisVehicle = draft?.vehicleId === vehicleId;
+  const hasDraftForOtherVehicle = draft != null && draft.vehicleId !== vehicleId;
+
   function handleStartRepairIntake() {
+    if (hasDraftForOtherVehicle) {
+      Alert.alert(
+        'Start a new decision?',
+        'You have an in-progress repair-vs-replace decision for another vehicle. Starting a new one will discard it.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Start New',
+            style: 'destructive',
+            onPress: () => {
+              startDraft(vehicleId, vehicleYear, currentMileage);
+              navigation.navigate('MileageCheck');
+            },
+          },
+        ],
+      );
+      return;
+    }
     startDraft(vehicleId, vehicleYear, currentMileage);
+    navigation.navigate('MileageCheck');
+  }
+
+  function handleResumeRepairIntake() {
     navigation.navigate('MileageCheck');
   }
 
@@ -151,9 +176,15 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
       </View>
       {photoError && <Text style={styles.error}>{photoError}</Text>}
 
-      <Pressable style={styles.primaryButton} onPress={handleStartRepairIntake}>
-        <Text style={styles.primaryButtonText}>I HAVE A REPAIR ESTIMATE</Text>
-      </Pressable>
+      {hasDraftForThisVehicle ? (
+        <Pressable style={styles.primaryButton} onPress={handleResumeRepairIntake}>
+          <Text style={styles.primaryButtonText}>RESUME IN-PROGRESS DECISION</Text>
+        </Pressable>
+      ) : (
+        <Pressable style={styles.primaryButton} onPress={handleStartRepairIntake}>
+          <Text style={styles.primaryButtonText}>I HAVE A REPAIR ESTIMATE</Text>
+        </Pressable>
+      )}
 
       <Pressable style={styles.secondaryButton} onPress={handleCheckSymptom}>
         <Text style={styles.secondaryButtonText}>SOMETHING'S GOING ON WITH THE CAR</Text>

@@ -27,6 +27,7 @@ export default function SignInScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [confirmationSentTo, setConfirmationSentTo] = useState<string | null>(null);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   useEffect(() => {
     isAppleSignInAvailable().then(setAppleAvailable);
@@ -133,14 +134,19 @@ export default function SignInScreen() {
         value={email}
         onChangeText={setEmail}
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#888"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <View style={styles.passwordRow}>
+        <TextInput
+          style={styles.passwordInput}
+          placeholder="Password"
+          placeholderTextColor="#888"
+          secureTextEntry={!isPasswordVisible}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <Pressable style={styles.passwordToggle} onPress={() => setIsPasswordVisible((v) => !v)} hitSlop={12}>
+          <Text style={styles.passwordToggleText}>{isPasswordVisible ? 'HIDE' : 'SHOW'}</Text>
+        </Pressable>
+      </View>
 
       {error && <Text style={styles.error}>{error}</Text>}
 
@@ -194,6 +200,23 @@ const styles = StyleSheet.create({
     color: '#111',
     backgroundColor: '#fff',
   },
+  passwordRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginBottom: 12,
+    backgroundColor: '#fff',
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 12,
+    fontSize: 16,
+    color: '#111',
+  },
+  passwordToggle: { paddingHorizontal: 12 },
+  passwordToggleText: { fontSize: 13, fontWeight: '700', color: '#666' },
   primaryButton: {
     backgroundColor: '#111',
     borderRadius: 8,

@@ -224,8 +224,31 @@ let rootNavigationRef: {
   reset: (state: { index: number; routes: { name: 'Garage' }[] }) => void;
 } | null = null;
 
-function decisionScreenOptions(title: string): NativeStackNavigationOptions {
-  return { title, headerRight: () => <CancelDecisionButton /> };
+// The repair intake + replacement flow (MileageCheck through Financing) is
+// the long stretch of blind input screens before Analysis produces any
+// output -- testers asked for a sense of how many steps remain here.
+const TOTAL_INPUT_STEPS = 11;
+
+function DecisionStepHeaderTitle({ title, step }: { title: string; step: number }) {
+  return (
+    <View style={styles.stepHeader}>
+      <Text style={styles.stepHeaderTitle}>{title}</Text>
+      <Text style={styles.stepHeaderProgress}>
+        Step {step} of {TOTAL_INPUT_STEPS}
+      </Text>
+      <View style={styles.stepHeaderTrack}>
+        <View style={[styles.stepHeaderFill, { width: `${(step / TOTAL_INPUT_STEPS) * 100}%` }]} />
+      </View>
+    </View>
+  );
+}
+
+function decisionScreenOptions(title: string, step?: number): NativeStackNavigationOptions {
+  return {
+    title,
+    headerRight: () => <CancelDecisionButton />,
+    ...(step != null ? { headerTitle: () => <DecisionStepHeaderTitle title={title} step={step} /> } : {}),
+  };
 }
 
 /**
@@ -309,57 +332,57 @@ export default function RootNavigator() {
           <AppStack.Screen
             name="MileageCheck"
             component={MileageCheckScreen}
-            options={decisionScreenOptions('Current Mileage')}
+            options={decisionScreenOptions('Current Mileage', 1)}
           />
           <AppStack.Screen
             name="RepairEstimate"
             component={RepairEstimateScreen}
-            options={decisionScreenOptions('What Did the Shop Say?')}
+            options={decisionScreenOptions('What Did the Shop Say?', 2)}
           />
           <AppStack.Screen
             name="ConfirmRepair"
             component={ConfirmRepairScreen}
-            options={decisionScreenOptions("Here's What We Heard")}
+            options={decisionScreenOptions("Here's What We Heard", 3)}
           />
           <AppStack.Screen
             name="VehicleHistory"
             component={VehicleHistoryScreen}
-            options={decisionScreenOptions('Vehicle History')}
+            options={decisionScreenOptions('Vehicle History', 4)}
           />
           <AppStack.Screen
             name="Financials"
             component={FinancialsScreen}
-            options={decisionScreenOptions('Financials')}
+            options={decisionScreenOptions('Financials', 5)}
           />
           <AppStack.Screen
             name="CurrentValue"
             component={CurrentValueScreen}
-            options={decisionScreenOptions('Vehicle Value')}
+            options={decisionScreenOptions('Vehicle Value', 6)}
           />
           <AppStack.Screen
             name="ReplacementQuestion"
             component={ReplacementQuestionScreen}
-            options={decisionScreenOptions('If You Replace It')}
+            options={decisionScreenOptions('If You Replace It', 7)}
           />
           <AppStack.Screen
             name="ReplacementPrice"
             component={ReplacementPriceScreen}
-            options={decisionScreenOptions('Replacement Vehicle')}
+            options={decisionScreenOptions('Replacement Vehicle', 8)}
           />
           <AppStack.Screen
             name="ReplacementCosts"
             component={ReplacementCostsScreen}
-            options={decisionScreenOptions('Real Cost to Replace')}
+            options={decisionScreenOptions('Real Cost to Replace', 9)}
           />
           <AppStack.Screen
             name="TradeIn"
             component={TradeInScreen}
-            options={decisionScreenOptions('Your Current Vehicle')}
+            options={decisionScreenOptions('Your Current Vehicle', 10)}
           />
           <AppStack.Screen
             name="Financing"
             component={FinancingScreen}
-            options={decisionScreenOptions('Financing')}
+            options={decisionScreenOptions('Financing', 11)}
           />
           <AppStack.Screen name="Analysis" component={AnalysisScreen} options={{ title: '', headerShown: false }} />
           <AppStack.Screen
@@ -423,4 +446,16 @@ const styles = StyleSheet.create({
   saveButtonText: { fontSize: 15, color: '#111', fontWeight: '700' },
   signOutButtonText: { fontSize: 14, color: '#666', fontWeight: '600' },
   deleteAccountButtonText: { fontSize: 13, color: '#c62828', fontWeight: '600' },
+  stepHeader: { alignItems: 'center', minWidth: 160 },
+  stepHeaderTitle: { fontSize: 17, fontWeight: '600' },
+  stepHeaderProgress: { fontSize: 11, color: '#888', marginTop: 1 },
+  stepHeaderTrack: {
+    width: 120,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: '#e2e2e2',
+    marginTop: 4,
+    overflow: 'hidden',
+  },
+  stepHeaderFill: { height: '100%', backgroundColor: '#111', borderRadius: 2 },
 });
