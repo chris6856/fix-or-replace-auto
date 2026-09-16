@@ -46,8 +46,9 @@ export default function AddVehicleScreen({ navigation, route }: Props) {
 
   function handleContinue() {
     const parsedYear = parseInt(year, 10);
-    if (!parsedYear || parsedYear < 1900 || parsedYear > 2100) {
-      setError('Enter a valid model year.');
+    const maxYear = new Date().getFullYear() + 1;
+    if (!parsedYear || parsedYear < 1900 || parsedYear > maxYear) {
+      setError(`Enter a valid model year (1900-${maxYear}).`);
       return;
     }
     if (!make.trim() || !model.trim()) {

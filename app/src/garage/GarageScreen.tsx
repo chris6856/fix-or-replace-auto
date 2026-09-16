@@ -141,12 +141,14 @@ function VehicleCard({
         <View style={styles.cardTopRow}>
           <View style={styles.cardTitleBlock}>
             <Text style={styles.cardTitle}>
-              {vehicle.nickname ?? `${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+              {vehicle.nickname ?? `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.trim ? ` ${vehicle.trim}` : ''}`}
             </Text>
-            <Text style={styles.cardSubtitle}>
-              {vehicle.year} {vehicle.make} {vehicle.model}
-              {vehicle.trim ? ` ${vehicle.trim}` : ''}
-            </Text>
+            {vehicle.nickname && (
+              <Text style={styles.cardSubtitle}>
+                {vehicle.year} {vehicle.make} {vehicle.model}
+                {vehicle.trim ? ` ${vehicle.trim}` : ''}
+              </Text>
+            )}
           </View>
           <VehiclePhotoCircle vehicle={vehicle} size={48} />
         </View>

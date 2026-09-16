@@ -22,6 +22,28 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// Supabase/GoTrue error messages are written for developers, not end users
+// (e.g. "Anonymous sign-ins are disabled" when the form is submitted empty).
+// Translate the ones users can actually trigger into plain guidance.
+function friendlyAuthError(message: string): string {
+  if (/anonymous sign-ins are disabled/i.test(message)) {
+    return 'Please enter your email and password.';
+  }
+  if (/unable to validate email address|invalid format/i.test(message)) {
+    return 'Please enter a valid email address.';
+  }
+  if (/user already registered/i.test(message)) {
+    return 'An account with this email already exists. Try signing in instead.';
+  }
+  if (/invalid login credentials/i.test(message)) {
+    return 'Incorrect email or password.';
+  }
+  if (/password should be at least/i.test(message)) {
+    return message.replace('Password should be', 'Password must be');
+  }
+  return message;
+}
+
 export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,11 +67,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
       isLoading,
       signUpWithEmail: async (email, password) => {
         const { data, error } = await supabase.auth.signUp({ email, password });
-        return { error: error?.message ?? null, needsEmailConfirmation: !error && !data.session };
+        return { error: error ? friendlyAuthError(error.message) : null, needsEmailConfirmation: !error && !data.session };
       },
       signInWithEmail: async (email, password) => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        return { error: error?.message ?? null };
+        return { error: error ? friendlyAuthError(error.message) : null };
       },
       signOut: async () => {
         await supabase.auth.signOut();

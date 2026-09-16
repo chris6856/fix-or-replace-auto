@@ -34,6 +34,14 @@ export default function SignInScreen() {
 
   async function handleEmailSubmit() {
     setError(null);
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter your email and password.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Please enter a valid email address.');
+      return;
+    }
     setIsSubmitting(true);
     if (mode === 'signUp') {
       const result = await signUpWithEmail(email, password);
