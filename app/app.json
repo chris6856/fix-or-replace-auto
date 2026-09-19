@@ -16,7 +16,7 @@
     },
     "android": {
       "package": "com.fixorreplaceauto.app",
-      "versionCode": 20,
+      "versionCode": 21,
       "adaptiveIcon": {
         "backgroundColor": "#0A0F2E",
         "foregroundImage": "./assets/android-icon-foreground.png"
