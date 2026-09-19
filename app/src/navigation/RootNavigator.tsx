@@ -1,7 +1,9 @@
-import { ActivityIndicator, Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator, type NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { useAuth } from '../auth/AuthContext';
+import { supabase } from '../lib/supabase';
 import SignInScreen from '../auth/SignInScreen';
 import WelcomeScreen from '../onboarding/WelcomeScreen';
 import WalkthroughScreen from '../onboarding/WalkthroughScreen';
@@ -115,31 +117,54 @@ function SignOutButton() {
 }
 
 /**
- * Apple requires a discoverable in-app way to start account deletion for
- * any app that supports account creation -- a link straight to the page
- * that actually performs it is explicitly an acceptable pattern (see
- * Guideline 5.1.1(v)), so this opens the same delete-account.html flow
- * the website already uses, rather than duplicating that logic natively.
+ * Apple requires a discoverable in-app way to delete the account for any
+ * app that supports account creation (Guideline 5.1.1(v)). Calling the
+ * delete-account Edge Function directly -- rather than sending everyone to
+ * the delete-account.html page, which only supports email/password
+ * re-entry -- is what makes this actually work for Apple/Google sign-in,
+ * since those accounts have no password to re-enter on a bare web page.
  */
 function DeleteAccountButton() {
+  const { signOut } = useAuth();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  async function performDelete() {
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke<{ success?: boolean; error?: string }>(
+        'delete-account',
+        { body: {} },
+      );
+      if (error || !data?.success) {
+        Alert.alert("Couldn't delete account", data?.error ?? error?.message ?? 'Please try again.');
+        return;
+      }
+      await signOut();
+    } catch {
+      Alert.alert("Couldn't delete account", 'Please check your connection and try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
   function handlePress() {
     Alert.alert(
       'Delete your account?',
-      "This opens a webpage where you can permanently delete your account and all its data. You'll need to sign in there to confirm.",
+      'This permanently deletes your account and all its data -- your vehicles, decisions, and symptom checks. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Continue',
-          style: 'destructive',
-          onPress: () => Linking.openURL('https://fixorreplaceauto.com/delete-account.html'),
-        },
+        { text: 'Delete Account', style: 'destructive', onPress: performDelete },
       ],
     );
   }
 
   return (
-    <Pressable onPress={handlePress} hitSlop={12} style={styles.cancelButton}>
-      <Text style={styles.deleteAccountButtonText}>Delete Account</Text>
+    <Pressable onPress={handlePress} hitSlop={12} style={styles.cancelButton} disabled={isDeleting}>
+      {isDeleting ? (
+        <ActivityIndicator size="small" color="#c62828" />
+      ) : (
+        <Text style={styles.deleteAccountButtonText}>Delete Account</Text>
+      )}
     </Pressable>
   );
 }
