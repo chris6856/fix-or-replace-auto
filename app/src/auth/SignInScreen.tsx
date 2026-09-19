@@ -140,6 +140,9 @@ export default function SignInScreen() {
           placeholder="Password"
           placeholderTextColor="#888"
           secureTextEntry={!isPasswordVisible}
+          autoCapitalize="none"
+          autoCorrect={false}
+          spellCheck={false}
           value={password}
           onChangeText={setPassword}
         />
