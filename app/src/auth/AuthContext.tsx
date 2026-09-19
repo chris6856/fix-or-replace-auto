@@ -41,6 +41,9 @@ function friendlyAuthError(message: string): string {
   if (/password should be at least/i.test(message)) {
     return message.replace('Password should be', 'Password must be');
   }
+  if (/email rate limit exceeded|rate limit/i.test(message)) {
+    return "We've sent too many emails to this address recently. Please wait a bit and try again.";
+  }
   return message;
 }
 
