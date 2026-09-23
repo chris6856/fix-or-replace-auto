@@ -19,7 +19,7 @@ import { isAppleSignInAvailable, isGoogleSignInConfigured, signInWithApple, sign
 type Mode = 'signIn' | 'signUp';
 
 export default function SignInScreen() {
-  const { signInWithEmail, signUpWithEmail } = useAuth();
+  const { signInWithEmail, signUpWithEmail, sendPasswordReset } = useAuth();
   const [mode, setMode] = useState<Mode>('signUp');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,6 +27,7 @@ export default function SignInScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [appleAvailable, setAppleAvailable] = useState(false);
   const [confirmationSentTo, setConfirmationSentTo] = useState<string | null>(null);
+  const [resetSentTo, setResetSentTo] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   useEffect(() => {
@@ -56,6 +57,23 @@ export default function SignInScreen() {
     }
   }
 
+  async function handleForgotPassword() {
+    setError(null);
+    if (!email.trim()) {
+      setError('Enter your email above first, then tap Forgot password.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    setIsSubmitting(true);
+    const result = await sendPasswordReset(email.trim());
+    setIsSubmitting(false);
+    if (result.error) setError(result.error);
+    else setResetSentTo(email.trim());
+  }
+
   async function handleApple() {
     setError(null);
     const result = await signInWithApple();
@@ -82,6 +100,21 @@ export default function SignInScreen() {
             setMode('signIn');
           }}
         >
+          <Text style={styles.primaryButtonText}>BACK TO SIGN IN</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  if (resetSentTo) {
+    return (
+      <View style={[styles.container, styles.centeredPadded]}>
+        <Text style={styles.title}>Check Your Email</Text>
+        <Text style={styles.confirmationText}>
+          We sent a password reset link to {resetSentTo}. Tap it to set a new password, then come back here and
+          sign in.
+        </Text>
+        <Pressable style={styles.primaryButton} onPress={() => setResetSentTo(null)}>
           <Text style={styles.primaryButtonText}>BACK TO SIGN IN</Text>
         </Pressable>
       </View>
@@ -150,6 +183,12 @@ export default function SignInScreen() {
           <Text style={styles.passwordToggleText}>{isPasswordVisible ? 'HIDE' : 'SHOW'}</Text>
         </Pressable>
       </View>
+
+      {mode === 'signIn' && (
+        <Pressable onPress={handleForgotPassword} disabled={isSubmitting}>
+          <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+        </Pressable>
+      )}
 
       {error && <Text style={styles.error}>{error}</Text>}
 
@@ -220,6 +259,7 @@ const styles = StyleSheet.create({
   },
   passwordToggle: { paddingHorizontal: 12 },
   passwordToggleText: { fontSize: 13, fontWeight: '700', color: '#666' },
+  forgotPasswordText: { fontSize: 14, color: '#666', textAlign: 'right', marginBottom: 8 },
   primaryButton: {
     backgroundColor: '#111',
     borderRadius: 8,

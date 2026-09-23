@@ -17,6 +17,7 @@ interface AuthContextValue {
   isLoading: boolean;
   signUpWithEmail: (email: string, password: string) => Promise<SignUpResult>;
   signInWithEmail: (email: string, password: string) => Promise<AuthResult>;
+  sendPasswordReset: (email: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
 }
 
@@ -74,6 +75,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
       },
       signInWithEmail: async (email, password) => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
+        return { error: error ? friendlyAuthError(error.message) : null };
+      },
+      // No in-app "set new password" screen exists (and a mailed link can't
+      // deep-link into a specific native screen reliably), so this sends the
+      // user to a web page that finishes the reset instead -- same pattern
+      // as the account-deletion web flow.
+      sendPasswordReset: async (email) => {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: 'https://fixorreplaceauto.com/reset-password.html',
+        });
         return { error: error ? friendlyAuthError(error.message) : null };
       },
       signOut: async () => {
