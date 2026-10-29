@@ -99,6 +99,14 @@
     Checkout was canceled — no charge was made. Pick up right where you left off below.
   </div>
 
+  <!-- Shown when we can't recover the in-progress estimate after returning
+       from a completed payment (e.g. storage was lost or cleared) -->
+  <div id="lost-session-notice" class="error" style="display:none; margin-bottom: 20px;">
+    We couldn't bring back your estimate after checkout. If you were charged, contact us at
+    <a href="mailto:info@fixorreplaceauto.com">info@fixorreplaceauto.com</a> with your payment confirmation and
+    we'll make it right — no need to pay again.
+  </div>
+
   <!-- Step: Vehicle -->
   <section class="step" id="step-vehicle">
     <div class="progress">STEP 1 OF 5</div>

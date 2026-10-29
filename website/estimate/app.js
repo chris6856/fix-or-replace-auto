@@ -278,8 +278,13 @@
 
     var pending = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || 'null');
     if (!pending) {
-      // Payment succeeded but this browser lost the in-progress form (e.g.
-      // a different device, or storage was cleared) -- nothing to show.
+      // Payment succeeded (session_id is present) but this browser lost the
+      // in-progress form -- most commonly because the visitor started on a
+      // different origin than the one Stripe redirects back to (http vs
+      // https, or www vs non-www; see .htaccess for the fix to that), so
+      // sessionStorage from before checkout isn't visible here. Surface
+      // this instead of silently dropping someone who may have just paid.
+      document.getElementById('lost-session-notice').style.display = 'block';
       show('vehicle');
       return;
     }

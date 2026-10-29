@@ -1,0 +1,16 @@
+# Force HTTPS and the canonical (non-www) host.
+#
+# The /estimate/ guest checkout flow stores its in-progress numbers in
+# sessionStorage before redirecting to Stripe, then reads them back after
+# the payment completes. sessionStorage is scoped per-origin (scheme +
+# host), and Stripe's success_url always lands the visitor back on
+# https://fixorreplaceauto.com (no www) -- so a visitor who started the
+# flow on http:// or www.fixorreplaceauto.com returns to a DIFFERENT
+# origin with empty storage, silently losing their result even though
+# they paid. Forcing every visitor onto one canonical origin up front
+# prevents that entirely (and is good practice regardless).
+RewriteEngine On
+
+RewriteCond %{HTTPS} off [OR]
+RewriteCond %{HTTP_HOST} ^www\.fixorreplaceauto\.com$ [NC]
+RewriteRule ^(.*)$ https://fixorreplaceauto.com/$1 [L,R=301]
