@@ -34,6 +34,13 @@ const SLIDES: Slide[] = [
       "your car's value -- that shortcut gets it wrong too often.",
   },
   {
+    eyebrow: 'HOW IT WORKS',
+    title: "Already got a quote? Check it.",
+    body:
+      "You don't need to run a full fix-or-replace decision just to sanity-check a price. Enter any repair " +
+      "you've been quoted and we'll tell you if it looks typical, with a range you can bring back to the shop.",
+  },
+  {
     eyebrow: 'WHY CREATE AN ACCOUNT',
     title: 'So we remember your vehicle',
     body:
