@@ -10,6 +10,8 @@ import { recommendationLabel } from '../decision/RecommendationBadge';
 import { formatCurrency } from '../decision/explainResult';
 import { emailReport } from '../decision/emailReport';
 import { useSymptomChecks, type SymptomCheckItem } from '../symptomCheck/symptomCheckHistory';
+import { usePriceChecks, type PriceCheckItem } from '../priceCheck/priceCheckHistory';
+import type { PriceVerdict } from '@fixorreplace/types';
 import { supabase } from '../lib/supabase';
 import { pickAndUploadVehiclePhoto } from './vehiclePhoto';
 import VehiclePhotoCircle from './VehiclePhotoCircle';
@@ -21,6 +23,7 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
   const { data: vehicle, isLoading, error } = useVehicle(vehicleId);
   const { data: history } = useDecisionHistory(vehicleId);
   const { data: symptomChecks } = useSymptomChecks(vehicleId);
+  const { data: priceChecks } = usePriceChecks(vehicleId);
   const { draft, startDraft } = useDecisionDraft();
   const queryClient = useQueryClient();
   const updateVehiclePhoto = useUpdateVehiclePhoto();
@@ -79,6 +82,24 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
     ]);
   }
 
+  function handleDeletePriceCheck(priceCheckId: string) {
+    Alert.alert('Delete this price check?', 'This will permanently remove this saved check.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          const { error: deleteError } = await supabase.from('price_checks').delete().eq('id', priceCheckId);
+          if (deleteError) {
+            Alert.alert("Couldn't delete", deleteError.message);
+            return;
+          }
+          queryClient.invalidateQueries({ queryKey: ['priceChecks', vehicleId] });
+        },
+      },
+    ]);
+  }
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -131,10 +152,14 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
     navigation.navigate('SymptomCheck', { vehicleId });
   }
 
+  function handleCheckPrice() {
+    navigation.navigate('PriceCheck', { vehicleId });
+  }
+
   function handleDeleteVehicle() {
     Alert.alert(
       'Delete this vehicle?',
-      `This permanently removes ${vehicleLabel} and all of its saved decisions and symptom checks. This can't be undone.`,
+      `This permanently removes ${vehicleLabel} and all of its saved decisions, symptom checks, and price checks. This can't be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -190,6 +215,10 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
         <Text style={styles.secondaryButtonText}>SOMETHING'S GOING ON WITH THE CAR</Text>
       </Pressable>
 
+      <Pressable style={styles.secondaryButton} onPress={handleCheckPrice}>
+        <Text style={styles.secondaryButtonText}>CHECK A REPAIR PRICE</Text>
+      </Pressable>
+
       <Text style={styles.sectionLabel}>Previous Decisions</Text>
       {!history || history.length === 0 ? (
         <Text style={styles.emptyText}>None yet.</Text>
@@ -208,6 +237,17 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
         <View>
           {symptomChecks.map((item) => (
             <SymptomCheckRow key={item.id} item={item} onDelete={handleDeleteSymptomCheck} />
+          ))}
+        </View>
+      )}
+
+      <Text style={styles.sectionLabel}>Price Checks</Text>
+      {!priceChecks || priceChecks.length === 0 ? (
+        <Text style={styles.emptyText}>None yet.</Text>
+      ) : (
+        <View>
+          {priceChecks.map((item) => (
+            <PriceCheckRow key={item.id} item={item} onDelete={handleDeletePriceCheck} />
           ))}
         </View>
       )}
@@ -290,6 +330,45 @@ function SymptomCheckRow({ item, onDelete }: { item: SymptomCheckItem; onDelete:
         Most likely: {topCause}
         {item.urgentSafetyNote ? '  ⚠️' : ''}
       </Text>
+    </View>
+  );
+}
+
+const PRICE_VERDICT_COLOR: Record<PriceVerdict, string> = {
+  below_typical: '#2e7d32',
+  within_typical: '#555',
+  above_typical: '#b8860b',
+};
+
+const PRICE_VERDICT_LABEL: Record<PriceVerdict, string> = {
+  below_typical: 'Below typical',
+  within_typical: 'Within typical',
+  above_typical: 'Above typical',
+};
+
+function PriceCheckRow({ item, onDelete }: { item: PriceCheckItem; onDelete: (id: string) => void }) {
+  const date = new Date(item.createdAt).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+  return (
+    <View style={styles.decisionRow}>
+      <View style={styles.decisionRowHeader}>
+        <Text style={styles.decisionDate}>{date}</Text>
+        <Pressable onPress={() => onDelete(item.id)} hitSlop={10}>
+          <Text style={styles.deleteText}>Delete</Text>
+        </Pressable>
+      </View>
+      <Text style={styles.decisionCategory} numberOfLines={1}>
+        {item.repairDescription}
+      </Text>
+      <View style={styles.decisionFooter}>
+        <Text style={styles.decisionCost}>{formatCurrency(item.quotedPrice)}</Text>
+        <Text style={[styles.decisionRecommendation, { color: PRICE_VERDICT_COLOR[item.verdict] }]}>
+          {PRICE_VERDICT_LABEL[item.verdict]}
+        </Text>
+      </View>
     </View>
   );
 }

@@ -124,6 +124,23 @@ export interface SymptomCheck {
   createdAt: string;
 }
 
+export type PriceVerdict = 'below_typical' | 'within_typical' | 'above_typical';
+
+/** A general-knowledge price check on an already-diagnosed repair -- never
+ *  real-time or regional pricing data, always a range, see
+ *  ai-check-repair-price for the caveats baked into the prompt. */
+export interface PriceCheck {
+  id: string;
+  vehicleId: string;
+  repairDescription: string;
+  quotedPrice: number;
+  typicalLowCost: number;
+  typicalHighCost: number;
+  verdict: PriceVerdict;
+  explanation: string;
+  createdAt: string;
+}
+
 /** Adapter interface so the valuation vendor is swappable (see build plan step 10). */
 export interface VehicleValuationProvider {
   getValuation(input: {

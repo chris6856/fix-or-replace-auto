@@ -39,7 +39,9 @@ import { useDecisionDraft } from '../decision/DecisionDraftContext';
 import type { AnalysisResult } from '../decision/buildCalcInput';
 import SymptomCheckScreen from '../symptomCheck/SymptomCheckScreen';
 import SymptomResultScreen from '../symptomCheck/SymptomResultScreen';
-import type { PossibleIssue } from '@fixorreplace/types';
+import PriceCheckScreen from '../priceCheck/PriceCheckScreen';
+import PriceCheckResultScreen from '../priceCheck/PriceCheckResultScreen';
+import type { PossibleIssue, PriceVerdict } from '@fixorreplace/types';
 
 export type AuthStackParamList = {
   Welcome: undefined;
@@ -74,6 +76,16 @@ export type AppStackParamList = {
     symptomDescription: string;
     possibleIssues: PossibleIssue[];
     urgentSafetyNote: string | null;
+  };
+  PriceCheck: { vehicleId: string };
+  PriceCheckResult: {
+    vehicleId: string;
+    repairDescription: string;
+    quotedPrice: number;
+    typicalLowCost: number;
+    typicalHighCost: number;
+    verdict: PriceVerdict;
+    explanation: string;
   };
   MileageCheck: undefined;
   RepairEstimate: undefined;
@@ -353,6 +365,12 @@ export default function RootNavigator() {
             name="SymptomResult"
             component={SymptomResultScreen}
             options={{ title: 'Possible Causes' }}
+          />
+          <AppStack.Screen name="PriceCheck" component={PriceCheckScreen} options={{ title: 'Price Check' }} />
+          <AppStack.Screen
+            name="PriceCheckResult"
+            component={PriceCheckResultScreen}
+            options={{ title: 'Is This Fair?' }}
           />
           <AppStack.Screen
             name="MileageCheck"
