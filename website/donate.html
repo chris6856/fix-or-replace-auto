@@ -47,12 +47,17 @@
     text-transform: uppercase; color: var(--steel); font-weight: 600;
   }
   h1 { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 2.4rem; margin: 10px 0 6px; text-wrap: balance; }
-  .intro { margin-top: 20px; color: var(--ink-soft); font-size: 19.5px; }
-  .amount-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 32px; }
+  .intro { margin-top: 20px; color: var(--ink-soft); font-size: 19.5px; max-width: 48ch; margin-left: auto; margin-right: auto; }
+  .bills-wrap { text-align: center; margin-bottom: 4px; }
+  .donate-card {
+    border: 1px solid var(--panel-line); border-radius: 14px; padding: 28px;
+    margin-top: 36px; background: var(--panel); box-shadow: 0 4px 18px rgba(20, 24, 28, 0.06);
+  }
+  .amount-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
   .amount-btn {
     font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px;
     padding: 16px 8px; border: 1px solid var(--panel-line); border-radius: 8px;
-    background: var(--panel); color: var(--ink); cursor: pointer;
+    background: var(--paper); color: var(--ink); cursor: pointer;
   }
   .amount-btn.selected { background: var(--ink); color: #fff; border-color: var(--ink); }
   .field { margin-top: 20px; }
@@ -64,7 +69,7 @@
   input[type="number"] {
     width: 100%; font-family: 'Montserrat', sans-serif; font-size: 18px;
     padding: 12px 14px; border: 1px solid var(--panel-line); border-radius: 6px;
-    background: var(--panel); color: var(--ink);
+    background: var(--paper); color: var(--ink);
   }
   input[type="number"]:focus { outline: 2px solid var(--amber); outline-offset: 1px; }
   .btn-primary {
@@ -96,28 +101,46 @@
 </header>
 
 <main>
-  <p class="eyebrow">Support the app</p>
-  <h1>Keep the lights on</h1>
-  <p class="intro">
+  <div class="bills-wrap" aria-hidden="true">
+    <svg viewBox="0 0 220 140" width="180" height="115" xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(110,72) rotate(-9) translate(-100,-60)">
+        <rect x="0" y="0" width="200" height="120" rx="10" fill="#DCEBE1" stroke="#2F7A4F" stroke-width="2" />
+      </g>
+      <g transform="translate(110,68) rotate(7) translate(-100,-60)">
+        <rect x="0" y="0" width="200" height="120" rx="10" fill="#2F7A4F" />
+        <rect x="8" y="8" width="184" height="104" rx="6" fill="none" stroke="#DCEBE1" stroke-width="1.5" stroke-dasharray="3 3" />
+        <circle cx="100" cy="60" r="30" fill="none" stroke="#DCEBE1" stroke-width="2" />
+        <text x="100" y="72" font-family="Georgia, serif" font-size="36" font-weight="700" fill="#DCEBE1" text-anchor="middle">$</text>
+        <text x="24" y="26" font-family="Georgia, serif" font-size="14" font-weight="700" fill="#DCEBE1">1</text>
+        <text x="168" y="104" font-family="Georgia, serif" font-size="14" font-weight="700" fill="#DCEBE1">1</text>
+      </g>
+    </svg>
+  </div>
+
+  <p class="eyebrow" style="text-align: center;">Support the app</p>
+  <h1 style="text-align: center;">Keep the lights on</h1>
+  <p class="intro" style="text-align: center;">
     Fix or Replace Auto runs on real infrastructure behind the scenes &mdash; AI calls, market-value lookups,
     servers &mdash; all so the core tool stays free. If it's saved you money or hassle, a small donation helps
     cover those costs.
   </p>
 
-  <div class="amount-grid" id="amount-grid">
-    <button type="button" class="amount-btn" data-amount="300">$3</button>
-    <button type="button" class="amount-btn" data-amount="500">$5</button>
-    <button type="button" class="amount-btn" data-amount="1000">$10</button>
-    <button type="button" class="amount-btn" data-amount="2500">$25</button>
-  </div>
+  <div class="donate-card">
+    <div class="amount-grid" id="amount-grid">
+      <button type="button" class="amount-btn" data-amount="300">$3</button>
+      <button type="button" class="amount-btn" data-amount="500">$5</button>
+      <button type="button" class="amount-btn" data-amount="1000">$10</button>
+      <button type="button" class="amount-btn" data-amount="2500">$25</button>
+    </div>
 
-  <div class="field">
-    <label for="custom-amount">Or enter a custom amount (USD)</label>
-    <input type="number" id="custom-amount" min="1" max="500" step="1" placeholder="e.g. 15" />
-  </div>
+    <div class="field">
+      <label for="custom-amount">Or enter a custom amount (USD)</label>
+      <input type="number" id="custom-amount" min="1" max="500" step="1" placeholder="e.g. 15" />
+    </div>
 
-  <button type="button" class="btn-primary" id="donate-btn">DONATE</button>
-  <div class="status" id="status"></div>
+    <button type="button" class="btn-primary" id="donate-btn">DONATE</button>
+    <div class="status" id="status"></div>
+  </div>
 </main>
 
 <footer>
