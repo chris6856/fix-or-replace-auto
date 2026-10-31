@@ -227,6 +227,21 @@
   .step h3 { font-size: 20.5px; margin-top: 14px; }
   .step p { font-size: 19px; color: var(--ink-soft); margin-top: 8px; }
 
+  /* ---------- Free tools ---------- */
+  .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .tools-grid { grid-template-columns: 1fr; } }
+  .tool-card {
+    display: block; border: 1px solid var(--panel-line); border-radius: 8px; padding: 22px;
+    text-decoration: none; color: inherit; transition: border-color 0.15s ease;
+  }
+  .tool-card:hover { border-color: var(--ink); }
+  .tool-card h3 { font-size: 19px; margin: 0 0 8px; }
+  .tool-card p { font-size: 16px; color: var(--ink-soft); margin: 0; }
+  .tool-card .tool-tag {
+    display: inline-block; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--amber-ink); font-weight: 700; margin-bottom: 10px;
+  }
+
   /* ---------- Recommendation states ---------- */
   .states { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
   @media (max-width: 760px) { .states { grid-template-columns: 1fr 1fr; } }
@@ -288,6 +303,7 @@
     <div class="nav-links">
       <a href="#how">How it works</a>
       <a href="#honesty">Why trust it</a>
+      <a href="#free-tools">Free Tools</a>
       <a href="#get-app">Get the app</a>
       <a href="https://www.youtube.com/channel/UC-ojfy-Mc7o-w0f8MFcwagw" target="_blank" rel="noopener">Need Help</a>
     </div>
@@ -463,6 +479,35 @@
         <p>Every recommendation comes from one deterministic calculation &mdash; the same math, every time, for
           every car. We use AI only to turn the shop's estimate into structured data and to explain the numbers back
           to you in plain English. <strong>It never gets a vote in the recommendation itself.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider wrap" />
+
+  <section class="block" id="free-tools">
+    <div class="wrap">
+      <div class="block-head">
+        <p class="eyebrow">Free tools</p>
+        <h2>No app needed for these.</h2>
+      </div>
+
+      <div class="tools-grid">
+        <a class="tool-card" href="price-check/">
+          <span class="tool-tag">Price Check</span>
+          <h3>Is this repair quote fair?</h3>
+          <p>Enter a repair and the price you were quoted. We'll compare it to a typical cost range.</p>
+        </a>
+        <a class="tool-card" href="purchase-check/">
+          <span class="tool-tag">Purchase Check</span>
+          <h3>Is this car a fair price?</h3>
+          <p>Enter a VIN, mileage, and asking price. We'll check it against real market data.</p>
+        </a>
+        <a class="tool-card" href="donate.html">
+          <span class="tool-tag">Support the app</span>
+          <h3>Keep the lights on</h3>
+          <p>These tools run on real infrastructure behind the scenes. A small donation helps cover it.</p>
+        </a>
       </div>
     </div>
   </section>

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Price Check — Fix or Replace Auto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<style>
+  :root {
+    --ink: #14181C; --ink-soft: #3A4248; --paper: #F4F6F5; --panel: #E7EBEA;
+    --panel-line: #D3D9D8; --steel: #4A5A63; --steel-soft: #6B7B83;
+    --amber-ink: #7A4B0E; --green: #2F7A4F; --green-tint: #DCEBE1;
+    --amber: #B8860B; --amber-tint: #F3E2C8; --red: #C62828;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: 'Montserrat', sans-serif; line-height: 1.5;
+  }
+  a { color: inherit; }
+  .top { padding: 20px 24px; border-bottom: 1px solid var(--panel-line); }
+  .brand { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 19px; text-decoration: none; }
+  .wrap { max-width: 620px; margin: 0 auto; padding: 40px 24px 80px; }
+  .eyebrow { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--steel); }
+  h1 { font-size: clamp(1.7rem, 4vw, 2.2rem); margin: 6px 0 12px; }
+  .subtitle { color: var(--ink-soft); font-size: 15px; margin-bottom: 28px; }
+  .step { display: none; }
+  .step.active { display: block; }
+  label { display: block; font-size: 13px; color: var(--steel); margin: 18px 0 6px; }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=number], textarea {
+    width: 100%; padding: 12px 14px; font-size: 16px; font-family: inherit;
+    border: 1px solid var(--panel-line); border-radius: 6px; background: #fff; color: var(--ink);
+  }
+  textarea { resize: vertical; min-height: 90px; }
+  .actions { display: flex; justify-content: flex-end; align-items: center; margin-top: 28px; gap: 16px; }
+  .btn-primary {
+    font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 17px;
+    color: var(--paper); background: var(--ink); border: none; border-radius: 5px;
+    padding: 13px 26px; cursor: pointer; text-decoration: none; display: inline-block;
+  }
+  .btn-primary:hover { background: var(--amber-ink); }
+  .btn-primary:disabled { opacity: 0.4; cursor: default; }
+  .error { color: var(--red); font-size: 14px; margin-top: 14px; }
+  .turnstile-wrap { margin-top: 20px; }
+
+  .verdict-card { border: 1px solid var(--panel-line); border-radius: 8px; padding: 24px; background: #fff; margin-top: 8px; }
+  .verdict-label { font-weight: 800; font-size: 16px; }
+  .verdict-below { color: var(--green); }
+  .verdict-within { color: var(--steel); }
+  .verdict-above { color: var(--amber); }
+  .range-text { margin-top: 10px; font-size: 15px; font-weight: 600; }
+  .explanation-text { margin-top: 10px; color: var(--ink-soft); font-size: 14.5px; }
+  .disclaimer { margin-top: 20px; font-size: 12.5px; color: var(--steel-soft); text-align: center; }
+  .result-actions { margin-top: 28px; }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <a class="brand" href="../">← Fix or Replace Auto</a>
+</div>
+
+<div class="wrap">
+
+  <section class="step active" id="step-form">
+    <div class="eyebrow">Free tool</div>
+    <h1>Is this repair quote fair?</h1>
+    <p class="subtitle">
+      Enter an already-diagnosed repair and the price a shop quoted you. We'll compare it to a typical cost
+      range — this isn't a verdict on this specific shop.
+    </p>
+
+    <label>Vehicle (year, make, model)</label>
+    <input type="text" id="f-vehicle" placeholder="2015 Chevrolet Equinox" />
+
+    <label>What's being repaired?</label>
+    <textarea id="f-repair" placeholder="Brake job, new rotors and pads, front and rear"></textarea>
+
+    <label>Price you were quoted</label>
+    <input type="number" id="f-price" placeholder="1200" />
+
+    <div class="turnstile-wrap cf-turnstile" data-sitekey="PLACEHOLDER_TURNSTILE_SITE_KEY"></div>
+
+    <div class="error" id="err-form"></div>
+    <div class="actions">
+      <button class="btn-primary" id="submit-btn" onclick="FORRA.checkPrice()">CHECK PRICE</button>
+    </div>
+  </section>
+
+  <section class="step" id="step-result">
+    <div class="eyebrow">Your result</div>
+    <h1 id="result-vehicle"></h1>
+    <p id="result-repair" class="subtitle"></p>
+
+    <div class="verdict-card">
+      <div class="verdict-label" id="result-verdict-label"></div>
+      <div class="range-text" id="result-range"></div>
+      <div class="explanation-text" id="result-explanation"></div>
+    </div>
+
+    <p class="disclaimer">
+      This is a general estimate based on typical U.S. repair costs and, when available, current published
+      references — not real-time or local pricing. Actual fair prices vary by region, shop type, and parts
+      used. Use this as a starting point for a conversation with your shop, not a final answer.
+    </p>
+
+    <div class="result-actions">
+      <a class="btn-primary" href="javascript:void(0)" onclick="FORRA.reset()">CHECK ANOTHER</a>
+    </div>
+  </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
