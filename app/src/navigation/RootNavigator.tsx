@@ -41,7 +41,9 @@ import SymptomCheckScreen from '../symptomCheck/SymptomCheckScreen';
 import SymptomResultScreen from '../symptomCheck/SymptomResultScreen';
 import PriceCheckScreen from '../priceCheck/PriceCheckScreen';
 import PriceCheckResultScreen from '../priceCheck/PriceCheckResultScreen';
-import type { PossibleIssue, PriceVerdict } from '@fixorreplace/types';
+import PurchaseCheckScreen from '../purchaseCheck/PurchaseCheckScreen';
+import PurchaseCheckResultScreen from '../purchaseCheck/PurchaseCheckResultScreen';
+import type { PossibleIssue, PriceVerdict, PurchaseVerdict } from '@fixorreplace/types';
 
 export type AuthStackParamList = {
   Welcome: undefined;
@@ -66,7 +68,7 @@ export type UnlockedTier = 'free' | 'decision' | 'full';
 export type AppStackParamList = {
   Garage: undefined;
   AddVehicle: { prefill?: VehicleDraft } | undefined;
-  ScanVin: undefined;
+  ScanVin: { purpose?: 'addVehicle' | 'purchaseCheck' } | undefined;
   ConfirmVehicle: { decoded: DecodedVehicle };
   VehicleProfile: { draft: VehicleDraft };
   VehicleDetail: { vehicleId: string };
@@ -86,6 +88,17 @@ export type AppStackParamList = {
     typicalHighCost: number;
     verdict: PriceVerdict;
     explanation: string;
+  };
+  PurchaseCheck: { decoded?: DecodedVehicle } | undefined;
+  PurchaseCheckResult: {
+    decoded: DecodedVehicle;
+    mileage: number;
+    zip: string;
+    askingPrice: number;
+    marketValue: number;
+    valueLow: number;
+    valueHigh: number;
+    verdict: PurchaseVerdict;
   };
   MileageCheck: undefined;
   RepairEstimate: undefined;
@@ -371,6 +384,16 @@ export default function RootNavigator() {
             name="PriceCheckResult"
             component={PriceCheckResultScreen}
             options={{ title: 'Is This Fair?' }}
+          />
+          <AppStack.Screen
+            name="PurchaseCheck"
+            component={PurchaseCheckScreen}
+            options={{ title: 'Buying a Car?' }}
+          />
+          <AppStack.Screen
+            name="PurchaseCheckResult"
+            component={PurchaseCheckResultScreen}
+            options={{ title: 'Is This a Fair Price?' }}
           />
           <AppStack.Screen
             name="MileageCheck"

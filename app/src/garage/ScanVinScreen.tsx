@@ -8,7 +8,8 @@ import { decodeVin, extractVinCandidate, VinDecodeError } from './vinDecode';
 type Props = NativeStackScreenProps<AppStackParamList, 'ScanVin'>;
 type ScanMode = 'barcode' | 'text';
 
-export default function ScanVinScreen({ navigation }: Props) {
+export default function ScanVinScreen({ route, navigation }: Props) {
+  const purpose = route.params?.purpose ?? 'addVehicle';
   const [permission, requestPermission] = useCameraPermissions();
   const [mode, setMode] = useState<ScanMode>('barcode');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -20,10 +21,22 @@ export default function ScanVinScreen({ navigation }: Props) {
     setError(null);
     try {
       const decoded = await decodeVin(vin);
-      navigation.replace('ConfirmVehicle', { decoded });
+      if (purpose === 'purchaseCheck') {
+        navigation.replace('PurchaseCheck', { decoded });
+      } else {
+        navigation.replace('ConfirmVehicle', { decoded });
+      }
     } catch (err) {
       setError(err instanceof VinDecodeError ? err.message : 'Could not decode this VIN. Try again.');
       setIsProcessing(false);
+    }
+  }
+
+  function handleManualEntry() {
+    if (purpose === 'purchaseCheck') {
+      navigation.navigate('PurchaseCheck', undefined);
+    } else {
+      navigation.navigate('AddVehicle', undefined);
     }
   }
 
@@ -90,7 +103,7 @@ export default function ScanVinScreen({ navigation }: Props) {
         <Pressable style={styles.primaryButton} onPress={requestPermission}>
           <Text style={styles.primaryButtonText}>CONTINUE</Text>
         </Pressable>
-        <Pressable onPress={() => navigation.navigate('AddVehicle', undefined)}>
+        <Pressable onPress={handleManualEntry}>
           <Text style={styles.linkText}>Enter VIN or vehicle details manually instead</Text>
         </Pressable>
       </View>
@@ -129,7 +142,7 @@ export default function ScanVinScreen({ navigation }: Props) {
           </Pressable>
         )}
 
-        <Pressable onPress={() => navigation.navigate('AddVehicle', undefined)}>
+        <Pressable onPress={handleManualEntry}>
           <Text style={styles.linkTextLight}>Enter manually instead</Text>
         </Pressable>
       </View>

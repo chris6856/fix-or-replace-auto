@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   ImageBackground,
   KeyboardAvoidingView,
@@ -13,18 +14,42 @@ import {
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { Vehicle } from '@fixorreplace/types';
+import { useQueryClient } from '@tanstack/react-query';
+import type { PurchaseVerdict, Vehicle } from '@fixorreplace/types';
 import type { AppStackParamList } from '../navigation/RootNavigator';
 import { useVehicles } from './useVehicles';
 import VehiclePhotoCircle from './VehiclePhotoCircle';
 import { openRepairFacilitySearch, useLatestShopName } from './researchRepairFacility';
+import { usePurchaseChecks, type PurchaseCheckItem } from '../purchaseCheck/purchaseCheckHistory';
+import { formatCurrency } from '../decision/explainResult';
+import { supabase } from '../lib/supabase';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Garage'>;
 
 export default function GarageScreen({ navigation }: Props) {
   const { data: vehicles, isLoading, error } = useVehicles();
+  const { data: purchaseChecks } = usePurchaseChecks();
+  const queryClient = useQueryClient();
   const [isResearchModalVisible, setIsResearchModalVisible] = useState(false);
   const [manualShopName, setManualShopName] = useState('');
+
+  function handleDeletePurchaseCheck(id: string) {
+    Alert.alert('Delete this purchase check?', 'This will permanently remove this saved check.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          const { error: deleteError } = await supabase.from('purchase_checks').delete().eq('id', id);
+          if (deleteError) {
+            Alert.alert("Couldn't delete", deleteError.message);
+            return;
+          }
+          queryClient.invalidateQueries({ queryKey: ['purchaseChecks'] });
+        },
+      },
+    ]);
+  }
 
   // Most vehicles already have a shop name saved from their last repair
   // estimate, so this only prompts when there's genuinely nothing to go on
@@ -67,6 +92,9 @@ export default function GarageScreen({ navigation }: Props) {
           <Pressable style={styles.addButton} onPress={() => navigation.navigate('AddVehicle')}>
             <Text style={styles.addButtonText}>+ ADD VEHICLE</Text>
           </Pressable>
+          <Pressable style={styles.evaluateButton} onPress={() => navigation.navigate('PurchaseCheck', undefined)}>
+            <Text style={styles.evaluateButtonText}>THINKING OF BUYING A CAR?</Text>
+          </Pressable>
         </View>
       ) : (
         <View style={styles.content}>
@@ -87,6 +115,18 @@ export default function GarageScreen({ navigation }: Props) {
           <Pressable style={styles.addButton} onPress={() => navigation.navigate('AddVehicle')}>
             <Text style={styles.addButtonText}>+ ADD VEHICLE</Text>
           </Pressable>
+          <Pressable style={styles.evaluateButton} onPress={() => navigation.navigate('PurchaseCheck', undefined)}>
+            <Text style={styles.evaluateButtonText}>THINKING OF BUYING A CAR?</Text>
+          </Pressable>
+
+          {purchaseChecks && purchaseChecks.length > 0 && (
+            <View style={styles.purchaseChecksSection}>
+              <Text style={styles.sectionLabel}>Recent Purchase Checks</Text>
+              {purchaseChecks.map((item) => (
+                <PurchaseCheckRow key={item.id} item={item} onDelete={handleDeletePurchaseCheck} />
+              ))}
+            </View>
+          )}
         </View>
       )}
 
@@ -167,6 +207,46 @@ function VehicleCard({
   );
 }
 
+const PURCHASE_VERDICT_COLOR: Record<PurchaseVerdict, string> = {
+  below_market: '#2e7d32',
+  at_market: '#555',
+  above_market: '#b8860b',
+};
+
+const PURCHASE_VERDICT_LABEL: Record<PurchaseVerdict, string> = {
+  below_market: 'Below market',
+  at_market: 'At market',
+  above_market: 'Above market',
+};
+
+function PurchaseCheckRow({ item, onDelete }: { item: PurchaseCheckItem; onDelete: (id: string) => void }) {
+  const date = new Date(item.createdAt).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+  return (
+    <View style={styles.purchaseCheckRow}>
+      <View style={styles.purchaseCheckRowHeader}>
+        <Text style={styles.purchaseCheckDate}>{date}</Text>
+        <Pressable onPress={() => onDelete(item.id)} hitSlop={10}>
+          <Text style={styles.purchaseCheckDeleteText}>Delete</Text>
+        </Pressable>
+      </View>
+      <Text style={styles.purchaseCheckVehicle} numberOfLines={1}>
+        {item.year} {item.make} {item.model}
+        {item.trim ? ` ${item.trim}` : ''}
+      </Text>
+      <View style={styles.purchaseCheckFooter}>
+        <Text style={styles.purchaseCheckPrice}>{formatCurrency(item.askingPrice)}</Text>
+        <Text style={[styles.purchaseCheckVerdict, { color: PURCHASE_VERDICT_COLOR[item.verdict] }]}>
+          {PURCHASE_VERDICT_LABEL[item.verdict]}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   // Faded well below full opacity, matching the Welcome and Sign In
@@ -216,6 +296,32 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addButtonText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  evaluateButton: {
+    marginTop: 10,
+    height: 48,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#111',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  evaluateButtonText: { color: '#111', fontSize: 15, fontWeight: '700' },
+  purchaseChecksSection: { marginTop: 28 },
+  sectionLabel: { fontSize: 13, fontWeight: '700', color: '#666', marginBottom: 8 },
+  purchaseCheckRow: {
+    borderWidth: 1,
+    borderColor: '#e2e2e2',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+  },
+  purchaseCheckRowHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  purchaseCheckDate: { fontSize: 12, color: '#999' },
+  purchaseCheckDeleteText: { fontSize: 13, color: '#c62828', fontWeight: '600' },
+  purchaseCheckVehicle: { fontSize: 15, fontWeight: '700', marginTop: 2 },
+  purchaseCheckFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
+  purchaseCheckPrice: { fontSize: 14, color: '#333' },
+  purchaseCheckVerdict: { fontSize: 13, fontWeight: '700' },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',

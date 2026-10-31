@@ -141,6 +141,29 @@ export interface PriceCheck {
   createdAt: string;
 }
 
+export type PurchaseVerdict = 'below_market' | 'at_market' | 'above_market';
+
+/** A prospective-purchase price check -- unlike PriceCheck, this is grounded
+ *  in a real MarketCheck market-value prediction for the exact VIN, not an
+ *  AI judgment call, so the verdict is computed (asking price vs. the same
+ *  +/-15% band CurrentValueScreen already shows), never guessed. */
+export interface PurchaseCheck {
+  id: string;
+  vin: string;
+  year: number;
+  make: string;
+  model: string;
+  trim: string | null;
+  mileage: number;
+  zip: string;
+  askingPrice: number;
+  marketValue: number;
+  valueLow: number;
+  valueHigh: number;
+  verdict: PurchaseVerdict;
+  createdAt: string;
+}
+
 /** Adapter interface so the valuation vendor is swappable (see build plan step 10). */
 export interface VehicleValuationProvider {
   getValuation(input: {
