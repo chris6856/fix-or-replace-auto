@@ -14,3 +14,13 @@ RewriteEngine On
 RewriteCond %{HTTPS} off [OR]
 RewriteCond %{HTTP_HOST} ^www\.fixorreplaceauto\.com$ [NC]
 RewriteRule ^(.*)$ https://fixorreplaceauto.com/$1 [L,R=301]
+
+# Redirect any request for a literal "index.html" (root or a subdirectory,
+# e.g. /index.html or /estimate/index.html) to the clean directory URL.
+# Apache already serves index.html as the default document either way, so
+# this doesn't change what's shown -- it just stops Google from treating
+# the two URLs as separate, duplicate pages (flagged in Search Console:
+# "/index.html" indexed as a near-duplicate of "/" with no canonical
+# chosen). A 301 is a hard signal here, stronger than rel=canonical alone.
+RewriteCond %{THE_REQUEST} \s/+(.*)index\.html[\s?] [NC]
+RewriteRule ^ /%1 [L,R=301]
