@@ -23,8 +23,14 @@ HOW IT WORKS
 • Get a plain-language explanation of the "why," plus smart questions to ask your mechanic
 • Save the decision and build a repair history for next time
 
+ALSO INCLUDED
+
+• Check Engine Light Assistant — enter your diagnostic trouble codes and get plain-English possible causes, ranked by likelihood and DIY difficulty, with a clear warning if your light is flashing and you should stop driving
+• Price Check — got a repair quote? See whether it's below, within, or above the typical cost range before you say yes
+• Purchase Check — buying a used car? Enter the VIN, mileage, and asking price to see if it's a fair deal against real market data
+
 BUILT TO BE HONEST, NOT ALARMIST
 
 Fix or Replace Auto never collapses a real financial decision into a single ratio. When the numbers are genuinely close, it says so — instead of forcing a false answer just to give you one.
 
-Fix or Replace Auto provides estimates to help you think through a repair-versus-replace decision. It is not mechanical, financial, or tax advice, and it doesn't replace a qualified mechanic's inspection. Tax, title, and fee figures may use nationwide averages rather than your exact state or dealer — always verify final numbers before making a purchase or repair decision.
+Fix or Replace Auto provides estimates to help you think through a repair-versus-replace decision. It is not mechanical, financial, or tax advice, and it doesn't replace a qualified mechanic's inspection or diagnosis. Tax, title, and fee figures may use nationwide averages rather than your exact state or dealer — always verify final numbers before making a purchase or repair decision.
