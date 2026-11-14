@@ -43,7 +43,9 @@ import PriceCheckScreen from '../priceCheck/PriceCheckScreen';
 import PriceCheckResultScreen from '../priceCheck/PriceCheckResultScreen';
 import PurchaseCheckScreen from '../purchaseCheck/PurchaseCheckScreen';
 import PurchaseCheckResultScreen from '../purchaseCheck/PurchaseCheckResultScreen';
-import type { PossibleIssue, PriceVerdict, PurchaseVerdict } from '@fixorreplace/types';
+import CheckEngineLightScreen from '../checkEngineLight/CheckEngineLightScreen';
+import CheckEngineLightResultScreen from '../checkEngineLight/CheckEngineLightResultScreen';
+import type { EngineLightCause, PossibleIssue, PriceVerdict, PurchaseVerdict } from '@fixorreplace/types';
 
 export type AuthStackParamList = {
   Welcome: undefined;
@@ -99,6 +101,15 @@ export type AppStackParamList = {
     valueLow: number;
     valueHigh: number;
     verdict: PurchaseVerdict;
+  };
+  CheckEngineLight: { vehicleId: string };
+  CheckEngineLightResult: {
+    vehicleId: string;
+    dtcCodes: string[];
+    isFlashing: boolean;
+    symptomNotes: string | null;
+    possibleCauses: EngineLightCause[];
+    urgentSafetyNote: string | null;
   };
   MileageCheck: undefined;
   RepairEstimate: undefined;
@@ -394,6 +405,16 @@ export default function RootNavigator() {
             name="PurchaseCheckResult"
             component={PurchaseCheckResultScreen}
             options={{ title: 'Is This a Fair Price?' }}
+          />
+          <AppStack.Screen
+            name="CheckEngineLight"
+            component={CheckEngineLightScreen}
+            options={{ title: 'Check Engine Light' }}
+          />
+          <AppStack.Screen
+            name="CheckEngineLightResult"
+            component={CheckEngineLightResultScreen}
+            options={{ title: 'Possible Causes' }}
           />
           <AppStack.Screen
             name="MileageCheck"

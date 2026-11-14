@@ -124,6 +124,30 @@ export interface SymptomCheck {
   createdAt: string;
 }
 
+export type DiyDifficulty = 'easy' | 'moderate' | 'difficult' | 'professional_only';
+
+/** A candidate cause for a diagnostic trouble code -- never a diagnosis.
+ *  Difficulty is per-cause, not a single overall value, since it genuinely
+ *  varies by which cause turns out to be right. */
+export interface EngineLightCause {
+  cause: string;
+  likelihood: IssueLikelihood;
+  isSafetyIssue: boolean;
+  diyDifficulty: DiyDifficulty;
+  explanation: string;
+}
+
+export interface CheckEngineLightCheck {
+  id: string;
+  vehicleId: string;
+  dtcCodes: string[];
+  isFlashing: boolean;
+  symptomNotes: string | null;
+  possibleCauses: EngineLightCause[];
+  urgentSafetyNote: string | null;
+  createdAt: string;
+}
+
 export type PriceVerdict = 'below_typical' | 'within_typical' | 'above_typical';
 
 /** A general-knowledge price check on an already-diagnosed repair -- never

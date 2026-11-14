@@ -11,6 +11,7 @@ import { formatCurrency } from '../decision/explainResult';
 import { emailReport } from '../decision/emailReport';
 import { useSymptomChecks, type SymptomCheckItem } from '../symptomCheck/symptomCheckHistory';
 import { usePriceChecks, type PriceCheckItem } from '../priceCheck/priceCheckHistory';
+import { useCheckEngineChecks, type CheckEngineLightItem } from '../checkEngineLight/checkEngineLightHistory';
 import type { PriceVerdict } from '@fixorreplace/types';
 import { supabase } from '../lib/supabase';
 import { pickAndUploadVehiclePhoto } from './vehiclePhoto';
@@ -24,6 +25,7 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
   const { data: history } = useDecisionHistory(vehicleId);
   const { data: symptomChecks } = useSymptomChecks(vehicleId);
   const { data: priceChecks } = usePriceChecks(vehicleId);
+  const { data: checkEngineChecks } = useCheckEngineChecks(vehicleId);
   const { draft, startDraft } = useDecisionDraft();
   const queryClient = useQueryClient();
   const updateVehiclePhoto = useUpdateVehiclePhoto();
@@ -100,6 +102,24 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
     ]);
   }
 
+  function handleDeleteCheckEngineCheck(checkId: string) {
+    Alert.alert('Delete this check?', 'This will permanently remove this saved check.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          const { error: deleteError } = await supabase.from('check_engine_checks').delete().eq('id', checkId);
+          if (deleteError) {
+            Alert.alert("Couldn't delete", deleteError.message);
+            return;
+          }
+          queryClient.invalidateQueries({ queryKey: ['checkEngineChecks', vehicleId] });
+        },
+      },
+    ]);
+  }
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -156,10 +176,14 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
     navigation.navigate('PriceCheck', { vehicleId });
   }
 
+  function handleCheckEngineLight() {
+    navigation.navigate('CheckEngineLight', { vehicleId });
+  }
+
   function handleDeleteVehicle() {
     Alert.alert(
       'Delete this vehicle?',
-      `This permanently removes ${vehicleLabel} and all of its saved decisions, symptom checks, and price checks. This can't be undone.`,
+      `This permanently removes ${vehicleLabel} and all of its saved decisions, symptom checks, price checks, and check engine checks. This can't be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -219,6 +243,10 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
         <Text style={styles.secondaryButtonText}>CHECK A REPAIR PRICE</Text>
       </Pressable>
 
+      <Pressable style={styles.secondaryButton} onPress={handleCheckEngineLight}>
+        <Text style={styles.secondaryButtonText}>CHECK ENGINE LIGHT ON?</Text>
+      </Pressable>
+
       <Text style={styles.sectionLabel}>Previous Decisions</Text>
       {!history || history.length === 0 ? (
         <Text style={styles.emptyText}>None yet.</Text>
@@ -248,6 +276,17 @@ export default function VehicleDetailScreen({ route, navigation }: Props) {
         <View>
           {priceChecks.map((item) => (
             <PriceCheckRow key={item.id} item={item} onDelete={handleDeletePriceCheck} />
+          ))}
+        </View>
+      )}
+
+      <Text style={styles.sectionLabel}>Check Engine Checks</Text>
+      {!checkEngineChecks || checkEngineChecks.length === 0 ? (
+        <Text style={styles.emptyText}>None yet.</Text>
+      ) : (
+        <View>
+          {checkEngineChecks.map((item) => (
+            <CheckEngineLightRow key={item.id} item={item} onDelete={handleDeleteCheckEngineCheck} />
           ))}
         </View>
       )}
@@ -369,6 +408,32 @@ function PriceCheckRow({ item, onDelete }: { item: PriceCheckItem; onDelete: (id
           {PRICE_VERDICT_LABEL[item.verdict]}
         </Text>
       </View>
+    </View>
+  );
+}
+
+function CheckEngineLightRow({ item, onDelete }: { item: CheckEngineLightItem; onDelete: (id: string) => void }) {
+  const date = new Date(item.createdAt).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+  const topCause = item.possibleCauses[0]?.cause ?? 'Check engine light';
+  return (
+    <View style={styles.decisionRow}>
+      <View style={styles.decisionRowHeader}>
+        <Text style={styles.decisionDate}>{date}</Text>
+        <Pressable onPress={() => onDelete(item.id)} hitSlop={10}>
+          <Text style={styles.deleteText}>Delete</Text>
+        </Pressable>
+      </View>
+      <Text style={styles.decisionCategory} numberOfLines={1}>
+        {item.dtcCodes.join(', ')}
+      </Text>
+      <Text style={styles.symptomTopCause}>
+        Most likely: {topCause}
+        {item.isFlashing ? '  ⚠️ Flashing' : ''}
+      </Text>
     </View>
   );
 }
