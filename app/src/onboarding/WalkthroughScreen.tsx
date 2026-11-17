@@ -1,11 +1,18 @@
 import { useRef, useState } from 'react';
-import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '../navigation/RootNavigator';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Walkthrough'>;
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface Slide {
   eyebrow: string;
@@ -50,12 +57,13 @@ const SLIDES: Slide[] = [
 ];
 
 export default function WalkthroughScreen({ navigation }: Props) {
+  const { width: screenWidth } = useWindowDimensions();
   const [pageIndex, setPageIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
   const isLastSlide = pageIndex === SLIDES.length - 1;
 
   function handleScrollEnd(event: NativeSyntheticEvent<NativeScrollEvent>) {
-    const index = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+    const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
     setPageIndex(index);
   }
 
@@ -64,7 +72,7 @@ export default function WalkthroughScreen({ navigation }: Props) {
       navigation.navigate('SignIn');
       return;
     }
-    scrollRef.current?.scrollTo({ x: (pageIndex + 1) * SCREEN_WIDTH, animated: true });
+    scrollRef.current?.scrollTo({ x: (pageIndex + 1) * screenWidth, animated: true });
   }
 
   return (
@@ -82,7 +90,7 @@ export default function WalkthroughScreen({ navigation }: Props) {
         style={styles.scrollView}
       >
         {SLIDES.map((slide) => (
-          <View key={slide.title} style={styles.slide}>
+          <View key={slide.title} style={[styles.slide, { width: screenWidth }]}>
             <Text style={styles.eyebrow}>{slide.eyebrow}</Text>
             <Text style={styles.title}>{slide.title}</Text>
             <Text style={styles.body}>{slide.body}</Text>
@@ -110,7 +118,7 @@ const styles = StyleSheet.create({
   skipButton: { position: 'absolute', top: 56, right: 20, zIndex: 1, padding: 8 },
   skipButtonText: { fontSize: 15, color: '#888', fontWeight: '600' },
   scrollView: { flex: 1 },
-  slide: { width: SCREEN_WIDTH, padding: 32, paddingTop: 120, alignItems: 'center' },
+  slide: { padding: 32, paddingTop: 120, alignItems: 'center' },
   eyebrow: { fontSize: 12, fontWeight: '700', color: '#888', letterSpacing: 1, marginBottom: 12 },
   title: { fontSize: 26, fontWeight: '800', textAlign: 'center', marginBottom: 20 },
   body: { fontSize: 16, color: '#444', textAlign: 'center', lineHeight: 24 },
