@@ -39,6 +39,15 @@
         {
           "photosPermission": "Fix or Replace Auto uses your photo library to add a picture of your vehicle."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
       ]
     ]
   }
